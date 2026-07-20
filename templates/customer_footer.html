@@ -1,0 +1,122 @@
+﻿<footer class="site-footer pt-5 pb-4 mt-5">
+  <div class="container footer-reveal" id="footerBlock">
+    <div class="row g-4 align-items-start">
+      <div class="col-12 col-lg-6">
+        <div class="footer-brand mb-3">
+          <img src="{{ url_for('brand_images', filename='logo_for_blue_bg.png') }}" alt="SpeedLink logo" class="footer-brand-icon">
+          <div class="footer-brand-text">
+            <div class="footer-brand-name">SpeedLink</div>
+            <div class="footer-brand-tag">Fast Data Service</div>
+          </div>
+        </div>
+        <p class="footer-copy mb-3">Fast, secure and affordable telecom-style ordering with a polished customer experience built for everyday Ghana data purchases.</p>
+        <p class="mb-2">Phone: <a href="tel:0549869925">0549869925</a></p>
+        <p class="mb-0">WhatsApp: <a href="https://wa.me/233549869925" target="_blank" rel="noopener">0549869925</a></p>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <h5 class="footer-title mb-3">Quick Links</h5>
+        <div class="footer-links d-flex flex-wrap gap-3">
+          <a href="/">Home</a>
+          <a href="/check-status">Check Status</a>
+          <a href="/deposit">Deposit</a>
+          <a href="https://wa.me/233549869925" target="_blank" rel="noopener">WhatsApp Support</a>
+        </div>
+      </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <div class="footer-credits d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+      <div>&copy; <span id="yearNow"></span> SpeedLink. All rights reserved.</div>
+      <div class="text-white-50">
+        Contact:
+        <a href="mailto:deikoj17@gmail.com">deikoj17@gmail.com</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  :root {
+    --footer-navy: #0D1B3D;
+    --footer-blue: #1565FF;
+    --footer-gold: #F5B400;
+  }
+
+  .site-footer {
+    background:
+      radial-gradient(circle at top left, rgba(21,101,255,.18), transparent 22%),
+      radial-gradient(circle at top right, rgba(245,180,0,.12), transparent 18%),
+      linear-gradient(135deg, #081227 0%, var(--footer-navy) 58%, #102653 100%);
+    color: #F3F6FA;
+    border-top: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 -14px 34px rgba(5, 10, 25, .08);
+  }
+  footer { margin-bottom: 0; }
+  .site-footer a {
+    color: #DCE7FF;
+    text-decoration: none;
+    transition: color .2s ease, opacity .2s ease;
+  }
+  .site-footer a:hover {
+    color: #FFFFFF;
+    opacity: 1;
+  }
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    flex-wrap: wrap;
+  }
+  .footer-brand-icon {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+  }
+  .footer-brand-text {
+    display: flex;
+    flex-direction: column;
+    gap: .12rem;
+  }
+  .footer-brand-name {
+    font-size: 1.1rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #FFFFFF;
+    letter-spacing: .02em;
+  }
+  .footer-brand-tag {
+    font-size: .78rem;
+    line-height: 1.1;
+    color: rgba(243,246,250,.72);
+    text-transform: uppercase;
+    letter-spacing: .12em;
+  }
+  .footer-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #FFFFFF;
+  }
+  .footer-copy {
+    max-width: 520px;
+    color: rgba(243,246,250,.78);
+  }
+  .footer-links a {
+    display: inline-flex;
+    align-items: center;
+    padding: .45rem .8rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .footer-links a:hover {
+    background: rgba(21,101,255,.18);
+    border-color: rgba(21,101,255,.28);
+  }
+</style>
+
+<script>
+  document.getElementById("yearNow").textContent = new Date().getFullYear();
+</script>
+

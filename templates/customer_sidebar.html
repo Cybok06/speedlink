@@ -1,0 +1,441 @@
+﻿{% set current = request.endpoint or "" %}
+{% set username = session.get("username", "Customer") %}
+{% set role = session.get("role", "customer") %}
+{# keep for future use, not needed for the link anymore #}
+{% set my_store_slug = session.get('store_slug') or (store.slug if (store is defined and store and store.slug) else None) %}
+
+<!-- Bootstrap & Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="icon" type="image/png" href="{{ url_for('brand_images', filename='logo_for_white_bg.png') }}">
+
+<style>
+  :root {
+    --sea-blue: #1565FF;
+    --sea-gold: #F5B400;
+    --dark-bg: #0D1B3D;
+    --dark-bg-2: #102653;
+    --light-text: #e9eef6;
+    --sidebar-w: 260px;
+    --mobile-navbar-h: 56px;
+    --whatsapp: #25D366;
+  }
+
+  /* --- Sidebar --- */
+  .admin-sidebar {
+    width: var(--sidebar-w);
+    background:
+      radial-gradient(480px 480px at -120px -120px, rgba(21,101,255,.18), transparent 60%),
+      radial-gradient(380px 380px at 120% 10%, rgba(245,180,0,.10), transparent 55%),
+      linear-gradient(180deg, var(--dark-bg), #08142B 72%, #06101F 100%);
+    color: var(--light-text);
+    border-right: 1px solid rgba(255,255,255,.08);
+    box-shadow: 18px 0 38px rgba(4, 9, 20, .12);
+  }
+  .sidebar-fixed {
+    position: fixed;
+    top: 0; left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    z-index: 1030;
+    transform: translateX(0);
+    transition: transform .3s ease;
+  }
+  @media (min-width: 992px) {
+    .sidebar-hidden .admin-sidebar.sidebar-fixed { transform: translateX(-100%); }
+  }
+
+  .admin-avatar {
+    width: 42px; height: 42px; border-radius: 14px;
+    overflow: hidden; border: 1px solid rgba(21,101,255,.65); flex: 0 0 42px;
+    background: rgba(255,255,255,.05);
+  }
+  .admin-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .admin-sidebar .nav-link,
+  .offcanvas-body .nav-link {
+    color: #c9d6e3;
+    border-radius: .85rem;
+    padding: .6rem .9rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .nav-link.active, .nav-link:hover {
+    background: linear-gradient(90deg, rgba(21,101,255,.30), rgba(245,180,0,.12));
+    border-color: rgba(245,180,0,.25);
+    color: #fff !important;
+    box-shadow: 0 12px 22px rgba(21,101,255,.16);
+  }
+  .nav .collapse .nav-link { padding-left: 2rem; }
+
+  /* CTA buttons (WhatsApp) */
+  .btn-wa {
+    background: var(--whatsapp);
+    color: #fff;
+    border: 0;
+  }
+  .btn-wa:hover { filter: brightness(.95); color: #fff; }
+  .btn-wa-outline {
+    border-color: var(--whatsapp);
+    color: #fff;
+  }
+  .btn-wa-outline:hover {
+    background: var(--whatsapp);
+    border-color: var(--whatsapp);
+    color: #fff;
+  }
+
+  /* --- Content layout helpers --- */
+  .customer-content { padding: 1rem; }
+  @media (max-width: 991.98px) {
+    .customer-content { padding-top: calc(var(--mobile-navbar-h) + 1rem); }
+  }
+  @media (min-width: 992px) {
+    .customer-content {
+      margin-left: var(--sidebar-w);
+      padding: 2rem;
+      transition: margin-left .3s ease;
+    }
+    .sidebar-hidden .customer-content { margin-left: 0; }
+  }
+
+  /* Mobile Top Navbar */
+  .customer-topbar {
+    background: linear-gradient(120deg, #081227, var(--dark-bg), var(--dark-bg-2));
+    height: var(--mobile-navbar-h);
+    box-shadow: 0 10px 24px rgba(6, 12, 27, .24);
+  }
+
+  .brand-lockup{
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+  }
+  .brand-lockup .brand-icon{
+    width:32px;
+    height:32px;
+    object-fit:contain;
+    flex:0 0 auto;
+  }
+  .brand-lockup .brand-copy{
+    display:flex;
+    flex-direction:column;
+    line-height:1.05;
+  }
+  .brand-lockup .brand-name{
+    color:#FFFFFF;
+    font-size:.95rem;
+    font-weight:800;
+    letter-spacing:.02em;
+  }
+  .brand-lockup .brand-tag{
+    color:rgba(233,238,246,.7);
+    font-size:.62rem;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+  }
+
+  /* Desktop toggle button */
+  .sidebar-toggle-lg {
+    position: fixed;
+    top: 12px;
+    left: calc(var(--sidebar-w) + 12px);
+    z-index: 1050;
+    transition: left .3s ease, box-shadow .2s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,.15);
+  }
+  .sidebar-hidden .sidebar-toggle-lg { left: 12px; }
+  .sidebar-toggle-lg .bi { font-size: 1.2rem; }
+
+  /* Floating WhatsApp pill (optional) */
+  .wa-pill {
+    position: fixed;
+    left: 18px; bottom: 20px;
+    z-index: 1100;
+  }
+  .wa-pill a {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .6rem .9rem;
+    border-radius: 999px;
+    background: var(--whatsapp);
+    color: #fff; text-decoration: none;
+    box-shadow: 0 6px 16px rgba(37,211,102,.35);
+  }
+  .wa-pill a:hover { filter: brightness(.95); color: #fff; }
+</style>
+
+<!-- Top Navbar (Mobile) -->
+<nav class="navbar navbar-dark customer-topbar d-lg-none fixed-top">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+    <div class="brand-lockup">
+      <img src="{{ url_for('brand_images', filename='logo_for_blue_bg.png') }}" alt="SpeedLink logo" class="brand-icon">
+      <div class="brand-copy">
+        <div class="brand-name">SpeedLink</div>
+        <div class="brand-tag">Customer Area</div>
+      </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminDrawer" aria-controls="adminDrawer">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Offcanvas Sidebar (Mobile) -->
+<div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="adminDrawer" style="width: var(--sidebar-w); background: var(--dark-bg);">
+  <div class="offcanvas-header">
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+    <!-- User -->
+    <div class="d-flex align-items-center mb-3">
+      <div class="admin-avatar me-2">
+        <img src="{{ url_for('brand_images', filename='logo_for_blue_bg.png') }}" alt="Logo">
+      </div>
+      <div>
+        <div class="fw-semibold">{{ username }}</div>
+        <div class="text-white-50 text-capitalize small">{{ role }}</div>
+      </div>
+    </div>
+
+    <hr class="border-secondary">
+
+    <!-- Nav Links -->
+    <ul class="nav flex-column mb-auto">
+      <li class="nav-item">
+        <a href="{{ url_for('customer_dashboard.customer_dashboard') }}" class="nav-link {% if current == 'customer_dashboard.customer_dashboard' %}active{% endif %}">
+          <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{{ url_for('orders.view_orders') }}" class="nav-link {% if current == 'orders.view_orders' %}active{% endif %}">
+          <i class="bi bi-card-checklist"></i> My Orders
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{{ url_for('transactions.view_transactions') }}" class="nav-link {% if current == 'transactions.view_transactions' %}active{% endif %}">
+          <i class="bi bi-cash-coin"></i> Transactions
+        </a>
+      </li>
+
+      {# Store Dashboard (mobile) - open new tab #}
+      <li class="nav-item">
+        <a href="{{ url_for('customer_store.customer_store_home') }}"
+           target="_blank" rel="noopener noreferrer" title="Open Store Dashboard in new tab"
+           class="nav-link {% if current in ['customer_store.customer_store_home','customer_store.customer_store_dashboard'] %}active{% endif %}">
+          <i class="bi bi-shop"></i> Store Dashboard
+        </a>
+      </li>
+
+      <!-- Complaints group -->
+      <li class="nav-item">
+        <a class="nav-link d-flex justify-content-between align-items-center {% if 'complaints.' in current %}active{% endif %}"
+           data-bs-toggle="collapse" href="#mobileComplaints" role="button" aria-expanded="{{ 'true' if 'complaints.' in current else 'false' }}">
+          <span><i class="bi bi-exclamation-diamond-fill"></i> Complaints</span>
+          <i class="bi bi-chevron-down"></i>
+        </a>
+        <div class="collapse {% if 'complaints.' in current %}show{% endif %}" id="mobileComplaints">
+          <ul class="nav flex-column ms-3">
+            <li class="nav-item">
+              <a href="{{ url_for('complaints.submit_complaint') }}" class="nav-link {% if current == 'complaints.submit_complaint' %}active{% endif %}">
+                <i class="bi bi-pencil-square"></i> Submit Complaint
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ url_for('complaints.view_complaints') }}" class="nav-link {% if current == 'complaints.view_complaints' %}active{% endif %}">
+                <i class="bi bi-list-check"></i> View Complaints
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      <!-- Top-level items (not inside Complaints) -->
+      <li class="nav-item">
+        <a href="{{ url_for('purchase_checker.purchase_checker') }}" class="nav-link {% if current == 'purchase_checker.purchase_checker' %}active{% endif %}">
+          <i class="bi bi-bookmark-check"></i> Buy Result Checker
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{{ url_for('purchases.view_purchases') }}" class="nav-link {% if current == 'purchases.view_purchases' %}active{% endif %}">
+          <i class="bi bi-receipt"></i> My Purchases
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{{ url_for('referral.generate_invite') }}" class="nav-link {% if current == 'referral.generate_invite' %}active{% endif %}">
+          <i class="bi bi-person-plus-fill"></i> Invite Friends
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{{ url_for('deposit.deposit_page') }}" class="nav-link {% if current == 'deposit.deposit_page' %}active{% endif %}">
+          <i class="bi bi-wallet2"></i> Deposit
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a href="{{ url_for('customer_profile.customer_profile') }}" class="nav-link {% if current == 'customer_profile.customer_profile' %}active{% endif %}">
+          <i class="bi bi-person-circle"></i> Profile
+        </a>
+      </li>
+    </ul>
+
+    <!-- WhatsApp CTA (mobile) -->
+    <div class="mt-3">
+      <a href="https://chat.whatsapp.com/GMzawMS1BpFEC3jW9pzkPJ?mode=gi_t"
+         target="_blank" rel="noopener"
+         class="btn btn-wa w-100">
+        <i class="bi bi-whatsapp me-1"></i> Join WhatsApp Community
+      </a>
+    </div>
+
+    <div class="mt-auto">
+      <hr class="border-secondary">
+      <a href="{{ url_for('login.logout') }}" class="btn btn-outline-light w-100">
+        <i class="bi bi-box-arrow-right"></i> Logout
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Desktop Sidebar -->
+<aside class="admin-sidebar sidebar-fixed d-none d-lg-flex flex-column p-3">
+  <div class="d-flex align-items-center mb-3">
+    <div class="admin-avatar me-2">
+      <img src="{{ url_for('brand_images', filename='logo_for_blue_bg.png') }}" alt="Logo">
+    </div>
+    <div>
+      <div class="fw-semibold">{{ username }}</div>
+      <div class="text-white-50 text-capitalize small">{{ role }}</div>
+    </div>
+  </div>
+
+  <hr class="border-secondary">
+
+  <ul class="nav flex-column mb-auto">
+    <li class="nav-item">
+      <a href="{{ url_for('customer_dashboard.customer_dashboard') }}" class="nav-link {% if current == 'customer_dashboard.customer_dashboard' %}active{% endif %}">
+        <i class="bi bi-speedometer2"></i> Dashboard
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="{{ url_for('orders.view_orders') }}" class="nav-link {% if current == 'orders.view_orders' %}active{% endif %}">
+        <i class="bi bi-card-checklist"></i> My Orders
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="{{ url_for('transactions.view_transactions') }}" class="nav-link {% if current == 'transactions.view_transactions' %}active{% endif %}">
+        <i class="bi bi-cash-coin"></i> Transactions
+      </a>
+    </li>
+
+    {# Store Dashboard (desktop) - open new tab #}
+    <li class="nav-item">
+      <a href="{{ url_for('customer_store.customer_store_home') }}"
+         target="_blank" rel="noopener noreferrer" title="Open Store Dashboard in new tab"
+         class="nav-link {% if current in ['customer_store.customer_store_home','customer_store.customer_store_dashboard'] %}active{% endif %}">
+        <i class="bi bi-shop"></i> Store Dashboard
+      </a>
+    </li>
+
+    <!-- Complaints (desktop) -->
+    <li class="nav-item">
+      <div class="nav-link d-flex justify-content-between align-items-center {% if 'complaints.' in current %}active{% endif %}" data-bs-toggle="collapse" href="#complaintsMenu" role="button" aria-expanded="{{ 'true' if 'complaints.' in current else 'false' }}">
+        <span><i class="bi bi-exclamation-diamond-fill"></i> Complaints</span>
+        <i class="bi bi-chevron-down"></i>
+      </div>
+      <div class="collapse {% if 'complaints.' in current %}show{% endif %}" id="complaintsMenu">
+        <ul class="nav flex-column ms-3">
+          <li class="nav-item">
+            <a href="{{ url_for('complaints.submit_complaint') }}" class="nav-link {% if current == 'complaints.submit_complaint' %}active{% endif %}">
+              <i class="bi bi-pencil-square"></i> Submit Complaint
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('complaints.view_complaints') }}" class="nav-link {% if current == 'complaints.view_complaints' %}active{% endif %}">
+              <i class="bi bi-list-check"></i> View Complaints
+            </a>
+          </li>
+        </ul>
+      </div>
+    </li>
+
+    <!-- Top-level items -->
+    <li class="nav-item">
+      <a href="{{ url_for('purchase_checker.purchase_checker') }}" class="nav-link {% if current == 'purchase_checker.purchase_checker' %}active{% endif %}">
+        <i class="bi bi-bookmark-check"></i> Buy Result Checker
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="{{ url_for('purchases.view_purchases') }}" class="nav-link {% if current == 'purchases.view_purchases' %}active{% endif %}">
+        <i class="bi bi-receipt"></i> My Purchases
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="{{ url_for('referral.generate_invite') }}" class="nav-link {% if current == 'referral.generate_invite' %}active{% endif %}">
+        <i class="bi bi-person-plus-fill"></i> Invite Friends
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="{{ url_for('deposit.deposit_page') }}" class="nav-link {% if current == 'deposit.deposit_page' %}active{% endif %}">
+        <i class="bi bi-wallet2"></i> Deposit
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="{{ url_for('customer_profile.customer_profile') }}" class="nav-link {% if current == 'customer_profile.customer_profile' %}active{% endif %}">
+        <i class="bi bi-person-circle"></i> Profile
+      </a>
+    </li>
+  </ul>
+
+  <!-- WhatsApp CTA (desktop) -->
+  <div class="mt-auto">
+    <a href="https://chat.whatsapp.com/GMzawMS1BpFEC3jW9pzkPJ?mode=gi_t"
+       target="_blank" rel="noopener"
+       class="btn btn-wa w-100 mt-3">
+      <i class="bi bi-whatsapp me-1"></i> Join WhatsApp Community
+    </a>
+    <a href="{{ url_for('login.logout') }}" class="btn btn-outline-light w-100 mt-3">
+      <i class="bi bi-box-arrow-right"></i> Logout
+    </a>
+  </div>
+</aside>
+
+<!-- Desktop toggle (visible on lg+) -->
+<button type="button" class="btn btn-light d-none d-lg-inline-flex align-items-center gap-2 sidebar-toggle-lg" id="sidebarToggleLg" aria-label="Toggle sidebar">
+  <i class="bi bi-layout-sidebar-inset-reverse"></i>
+  <span class="d-none d-xl-inline">Menu</span>
+</button>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  (function () {
+    const root = document.documentElement;
+    const KEY = 'customerSidebarHidden';
+    const toggleBtn = document.getElementById('sidebarToggleLg');
+
+    function applySavedState() {
+      try {
+        const hidden = localStorage.getItem(KEY);
+        if (hidden === '1') root.classList.add('sidebar-hidden');
+        else root.classList.remove('sidebar-hidden');
+      } catch (e) {}
+    }
+    applySavedState();
+
+    toggleBtn?.addEventListener('click', function () {
+      root.classList.toggle('sidebar-hidden');
+      try {
+        const isHidden = root.classList.contains('sidebar-hidden');
+        localStorage.setItem(KEY, isHidden ? '1' : '0');
+      } catch (e) {}
+    });
+  })();
+</script>
+
+
+

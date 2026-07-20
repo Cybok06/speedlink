@@ -1,0 +1,1143 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SpeedLink - Orders</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <link rel="icon" type="image/png" href="{{ url_for('brand_images', filename='logo_for_white_bg.png') }}">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary:#0EA5E9;--primary-2:#0284c7;--primary-3:#38bdf8;
+      --bg:#f8fafc;--bg-2:#f1f5f9;--card:#ffffff;--border:#e2e8f0;
+      --text:#0A1A2F;--muted:#64748b;
+      --secondary:#0A1A2F;
+      --ok:#16a34a;--ok-soft:#ecfdf5;          /* delivered */
+      --warn:#f59e0b;--warn-soft:#fffbeb;      /* pending  */
+      --info:#0EA5E9;--info-soft:#e6f6fe;      /* processing */
+      --bad:#ef4444;--bad-soft:#fef2f2;        /* failed */
+      --violet:#6366f1;--violet-soft:#eef2ff;  /* refunded */
+      --teal:#14b8a6;--teal-soft:#e6fffb;      /* completed */
+      --shadow-md:0 4px 12px rgba(2,10,28,.08);
+      --shadow-lg:0 12px 28px rgba(2,10,28,.12);
+      --radius:16px;
+    }
+
+    body{background:linear-gradient(135deg,var(--bg) 0%,var(--bg-2) 100%);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+    .container{max-width:1400px}
+    h2{color:var(--primary);font-weight:800;letter-spacing:.2px}
+    .subhead{color:var(--muted)}
+    .chip{display:inline-flex;align-items:center;gap:.5rem;background:#eef2ff;color:#3730a3;padding:.4rem .7rem;border-radius:999px;border:1px solid #c7d2fe;font-size:.82rem}
+
+    /* Sticky header (title + actions) */
+    .sticky-header{position:sticky;top:0;background:linear-gradient(135deg,var(--bg) 0%,var(--bg-2) 100%);
+      z-index:20;padding:.5rem 0 .75rem;margin-bottom:.25rem}
+
+    /* Filters */
+    .filter-bar{display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);padding:1rem 1.25rem;position:sticky;top:4.25rem;z-index:10}
+    .filter-bar.show{display:block}
+    .filter-row{row-gap:.75rem}
+    .form-select,.form-control{border:2px solid var(--border);border-radius:10px;padding:.55rem .8rem}
+    .form-select:focus,.form-control:focus{border-color:var(--primary);box-shadow:0 0 0 .2rem rgba(37,99,235,.25)}
+
+    /* Filter toggle hint */
+    .filter-toggle{display:flex;gap:.5rem}
+
+    .actions-bar{display:flex;flex-wrap:wrap;gap:.5rem}
+    .btn-icon{display:inline-flex;align-items:center;gap:.5rem}
+
+    .table-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);overflow:hidden}
+    table.table{margin:0}
+    thead th{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-2) 100%);color:#fff;border:none;text-transform:uppercase;font-size:.8rem;letter-spacing:.6px}
+    tbody tr:hover{background:#f0f7ff}
+    td,th{vertical-align:middle}
+    .table-responsive{scrollbar-width:thin}
+
+    /* Status chips */
+    .status-chip{display:inline-flex;align-items:center;gap:.45rem;padding:.35rem .65rem;border-radius:999px;font-size:.75rem;font-weight:700;border:1px solid transparent}
+    .st-delivered{color:var(--ok);background:var(--ok-soft);border-color:#a7f3d0}
+    .st-failed{color:var(--bad);background:var(--bad-soft);border-color:#fecaca}
+    .st-processing{color:var(--info);background:var(--info-soft);border-color:#bae6fd}
+    .st-refunded{color:var(--violet);background:var(--violet-soft);border-color:#c7d2fe}
+    .st-pending{color:var(--warn);background:var(--warn-soft);border-color:#fde68a}
+    .st-completed{color:var(--teal);background:var(--teal-soft);border-color:#99f6e4}
+
+    /* Provider badges - FINAL STANDARD */
+    .prov-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      padding:.25rem .55rem;
+      border-radius:999px;
+      font-size:.72rem;
+      font-weight:700;
+      border:1px solid transparent;
+    }
+    .prov-justice{color:#14532d;background:#dcfce7;border-color:#86efac}
+
+    /* API passed chips */
+    .api-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:.4rem;
+      padding:.35rem .65rem;
+      border-radius:999px;
+      font-size:.75rem;
+      font-weight:700;
+      border:1px solid transparent;
+    }
+    .api-chip-passed{color:#166534;background:#dcfce7;border-color:#bbf7d0}
+    .api-chip-not{color:#475569;background:#f1f5f9;border-color:#e2e8f0}
+    /* Paid-from badge */
+    .pf-badge{border-radius:999px;padding:.45rem .65rem;font-weight:700}
+    .pf-wallet{background:#ecfeff;color:#155e75;border:1px solid #a5f3fc}
+    .pf-card{background:#f0f9ff;color:#1e3a8a;border:1px solid #bfdbfe}
+    .pf-momo{background:#fefce8;color:#713f12;border:1px solid #fde68a}
+    .pf-paystack{background:#eef2ff;color:#1e1b4b;border:1px solid #c7d2fe}
+    .pf-flutterwave{background:#fff7ed;color:#7c2d12;border:1px solid #fed7aa}
+    .pf-bank{background:#f5f3ff;color:#4c1d95;border:1px solid #ddd6fe}
+
+    /* Inline actions tray (desktop) */
+    .status-actions{display:none;gap:.35rem;flex-wrap:wrap;align-items:center;margin-left:.25rem}
+    .status-actions.show{display:inline-flex}
+    .status-actions.hidden{display:none}
+    .status-actions .btn{padding:.2rem .5rem;font-size:.75rem;border-radius:999px}
+
+    /* Card view (mobile) */
+    @media (max-width: 767.98px){
+      .table-wrap{display:none}
+      .cards{display:grid;gap:1rem}
+      .order-card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-md);padding:1rem}
+      .order-card .header{display:flex;justify-content:space-between;gap:.5rem;align-items:center}
+      .order-card .meta{color:var(--muted);font-size:.85rem}
+      .order-card .items{margin:.5rem 0 0}
+      .order-card .it{display:flex;justify-content:space-between;border-top:1px dashed var(--border);padding-top:.5rem;margin-top:.5rem}
+      .order-card .tot{display:flex;align-items:center;gap:.5rem;margin-top:.75rem}
+      .order-card .footer{display:flex;gap:.5rem;align-items:center;margin-top:.75rem;flex-wrap:wrap}
+      .order-card .footer .form-check-input{width:22px;height:22px}
+      .order-card .btn-sm{padding:.45rem .6rem}
+      .card-actions{display:flex;gap:.35rem;flex-wrap:wrap; width:100%}
+      .card-actions.hidden{display:none}
+      .card-actions form {display:inline}
+      .card-actions .btn {font-size:.75rem; padding:.35rem .55rem; border-radius:999px}
+    }
+    @media (min-width: 768px){
+      .cards{display:none}
+    }
+
+    /* Bigger touch targets for checkboxes */
+    .form-check-input{width:18px;height:18px}
+    .table .form-check-input{transform:translateY(2px)}
+
+    /* Offcanvas & jobs list */
+    .offcanvas{border-left:1px solid var(--border)}
+    .schedule-row{display:flex;align-items:center;justify-content:space-between;border-bottom:1px dashed var(--border);padding:.6rem 0}
+    .muted{color:var(--muted)}
+
+    .service-checklist{max-height:220px;overflow:auto;border:1px solid var(--border);border-radius:12px;padding:.75rem;background:#f8fafc}
+    .service-check{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.45rem .5rem;border-bottom:1px dashed var(--border)}
+    .service-check:last-child{border-bottom:none}
+    .export-batch-row{border:1px solid var(--border);border-radius:12px;padding:.75rem;background:#fff}
+    .export-batch-lines{max-height:320px;overflow:auto;border:1px solid var(--border);border-radius:12px;padding:.75rem;background:#f8fafc}
+    .line-row{display:flex;align-items:flex-start;gap:.65rem;padding:.5rem 0;border-bottom:1px dashed var(--border)}
+    .line-row:last-child{border-bottom:none}
+
+    /* Floating bar for selected (mobile) */
+    .floating-bar{
+      position:fixed;left:0;right:0;bottom:0;background:#0b1220cc;color:#fff;backdrop-filter:blur(8px);
+      display:none;z-index:1050;padding:.6rem .9rem;box-shadow:0 -8px 24px rgba(2,10,28,.22)
+    }
+    .floating-bar.show{display:flex;align-items:center;gap:.75rem;justify-content:space-between}
+    .floating-bar .btn{box-shadow:var(--shadow-md)}
+  </style>
+</head>
+<body>
+  {% include 'admin_sidebar.html' %}
+
+  <div class="container py-3 py-md-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-start sticky-header">
+      <div class="mb-2">
+        <h2 class="mb-1"><i class="fas fa-box me-2"></i>Customer Orders</h2>
+        <div class="subhead d-flex flex-wrap gap-2">
+          <span class="chip"><i class="fa-solid fa-database"></i> Total: {{ total_orders or 0 }}</span>
+          {% if status_filter %}<span class="chip"><i class="fa-solid fa-filter"></i> Status: {{ status_filter|capitalize }}</span>{% endif %}
+        </div>
+      </div>
+
+      <div class="actions-bar">
+        <!-- Filters toggle (all sizes) -->
+        <button class="btn btn-outline-secondary btn-icon" id="toggleFilters" aria-expanded="false" aria-controls="filtersCard">
+          <i class="fa-solid fa-sliders"></i> Filters
+        </button>
+
+        <!-- View Schedules -->
+        <button class="btn btn-outline-primary btn-icon" data-bs-toggle="offcanvas" data-bs-target="#jobsOffcanvas">
+          <i class="fa-solid fa-clock-rotate-left"></i> Scheduled Orders
+        </button>
+
+        <button class="btn btn-primary btn-icon" data-bs-toggle="modal" data-bs-target="#exportUndeliveredModal">
+          <i class="fa-solid fa-file-export"></i> Export Undelivered
+        </button>
+
+        <button class="btn btn-outline-secondary btn-icon" data-bs-toggle="modal" data-bs-target="#exportHistoryModal">
+          <i class="fa-solid fa-id-badge"></i> Export Batches
+        </button>
+
+        <!-- Bulk Deliver within current filters -->
+        <form method="POST" action="{{ url_for('admin_orders.bulk_deliver_orders') }}{% if filters_query %}?{{ filters_query }}{% endif %}">
+          <button class="btn btn-success btn-icon" data-confirm="Mark ALL processing orders in the current filters as DELIVERED?">
+            <i class="fa-solid fa-truck-fast"></i> Mark Processing &rarr; Delivered
+          </button>
+        </form>
+
+        <!-- NEW: Mark Selected -> Delivered (desktop header) -->
+        <button class="btn btn-dark btn-icon" id="markSelectedDelivered">
+          <i class="fa-solid fa-check-double"></i> Mark Selected &rarr; Delivered
+        </button>
+
+        <!-- Schedule for selected -->
+        <button class="btn btn-outline-dark btn-icon" id="openScheduleSelected" data-bs-toggle="modal" data-bs-target="#scheduleModal">
+          <i class="fa-solid fa-calendar-plus"></i> Schedule Status (Selected)
+        </button>
+      </div>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fas fa-info-circle me-2"></i>{{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Filters -->
+    <div class="filter-toggle mb-2">
+      <span class="text-muted small"><i class="fa-regular fa-circle-question me-1"></i>Tap &ldquo;Filters&rdquo; to refine</span>
+    </div>
+
+    <form method="get" class="filter-bar mb-3" id="filtersCard">
+      <div class="row filter-row">
+        <div class="col-12 col-md-3">
+          <label class="form-label"><i class="fa-solid fa-hashtag me-1"></i>Order ID</label>
+          <input type="text" name="order_id" value="{{ order_id_q or '' }}" class="form-control" placeholder="Paste or type order id">
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label"><i class="fa-solid fa-user me-1"></i>Customer</label>
+          <input type="text" name="customer" value="{{ customer_q or '' }}" class="form-control" placeholder="Name / email / phone / username">
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label"><i class="fa-solid fa-clipboard-check me-1"></i>Status</label>
+          <select name="status" class="form-select">
+            <option value="">All</option>
+            {% for s in ['processing','delivered','failed','refunded','pending','completed'] %}
+              <option value="{{ s }}" {% if s == status_filter %}selected{% endif %}>{{ s|capitalize }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label"><i class="fa-solid fa-wallet me-1"></i>Paid From</label>
+          <select name="paid_from" class="form-select">
+            <option value="">Any</option>
+            {% for src in ['wallet','card','momo','paystack','flutterwave','bank'] %}
+              <option value="{{ src }}" {% if (paid_from or '')==src %}selected{% endif %}>{{ src|capitalize }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label"><i class="fa-solid fa-arrow-down-1-9 me-1"></i>Min Total (&#8373;)</label>
+          <input type="number" step="0.01" name="min_total" value="{{ min_total or '' }}" class="form-control" placeholder="0.00">
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label"><i class="fa-solid fa-arrow-up-9-1 me-1"></i>Max Total (&#8373;)</label>
+          <input type="number" step="0.01" name="max_total" value="{{ max_total or '' }}" class="form-control" placeholder="1000.00">
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label"><i class="fa-solid fa-calendar-day me-1"></i>From</label>
+          <input type="date" name="date_from" value="{{ date_from or '' }}" class="form-control">
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label"><i class="fa-solid fa-calendar-check me-1"></i>To</label>
+          <input type="date" name="date_to" value="{{ date_to or '' }}" class="form-control">
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label"><i class="fa-solid fa-boxes-stacked me-1"></i>Item Service</label>
+          <input type="text" name="item_service" value="{{ item_service or '' }}" class="form-control" placeholder="e.g., Bigtime Data">
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label"><i class="fa-solid fa-tags me-1"></i>Item Offer</label>
+          <input type="text" name="item_offer" value="{{ item_offer or '' }}" class="form-control" placeholder="e.g., 1GB">
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label"><i class="fa-solid fa-mobile-screen-button me-1"></i>Item Phone</label>
+          <input type="text" name="item_phone" value="{{ item_phone or '' }}" class="form-control" placeholder="e.g., 055xxxxxxx">
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label"><i class="fa-solid fa-sort me-1"></i>Sort</label>
+          <select name="sort" class="form-select">
+            <option value="newest" {% if (sort or '')=='newest' %}selected{% endif %}>Newest first</option>
+            <option value="oldest" {% if (sort or '')=='oldest' %}selected{% endif %}>Oldest first</option>
+            <option value="amount_desc" {% if (sort or '')=='amount_desc' %}selected{% endif %}>Amount: High &rarr; Low</option>
+            <option value="amount_asc" {% if (sort or '')=='amount_asc' %}selected{% endif %}>Amount: Low &rarr; High</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label"><i class="fa-solid fa-list-ol me-1"></i>Per Page</label>
+          <select name="per_page" class="form-select">
+            {% for n in [10,20,30,50,100] %}
+              <option value="{{ n }}" {% if (per_page or 10)|int == n %}selected{% endif %}>{{ n }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 col-md-3 d-flex align-items-end gap-2">
+          <button type="submit" class="btn btn-primary btn-icon w-100 w-md-auto">
+            <i class="fa-solid fa-magnifying-glass"></i> Apply Filters
+          </button>
+          <a href="{{ url_for('admin_orders.admin_view_orders') }}" class="btn btn-outline-secondary btn-icon w-100 w-md-auto">
+            <i class="fa-solid fa-rotate-left"></i> Reset
+          </a>
+        </div>
+      </div>
+    </form>
+
+    <!-- TABLE (md+) -->
+    <div class="table-wrap mb-3">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="text-center">
+            <tr>
+              <th style="width:42px">
+                <input class="form-check-input" type="checkbox" id="checkAll">
+              </th>
+              <th><i class="fas fa-receipt me-1"></i>Order ID</th>
+              <th><i class="fas fa-user me-1"></i>Customer</th>
+              <th><i class="fas fa-shopping-cart me-1"></i>Items</th>
+              <th><i class="fas fa-money-bill-wave me-1"></i>Total (&#8373;)</th>
+              <th><i class="fas fa-tasks me-1"></i>Status</th>
+              <th><i class="fas fa-credit-card me-1"></i>Paid From</th>
+              <th><i class="fas fa-calendar me-1"></i>Date</th>
+              <th style="width:110px">Quick</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in orders %}
+            {% set st = (order.get('status') or '').lower() %}
+            <tr>
+              <td class="text-center">
+                <input class="form-check-input row-check" type="checkbox" value="{{ order['_id'] }}">
+              </td>
+              <td class="fw-semibold">{{ order["order_id"] }}</td>
+              <td>
+                <div class="fw-semibold">{{ (order["user"] or {}).get("first_name","") }} {{ (order["user"] or {}).get("last_name","") }}</div>
+                <div class="small text-muted">
+                  <i class="fas fa-envelope me-1"></i>{{ (order["user"] or {}).get("email","") }}<br>
+                  <i class="fas fa-phone-alt me-1"></i><strong>{{ (order["user"] or {}).get("phone","") }}</strong>
+                </div>
+              </td>
+              <td>
+                <ul class="list-unstyled small mb-0">
+                  {% for item in order["items"] %}
+                  <li class="mb-1 border-bottom pb-1">
+                    <strong>{{ item["serviceName"] }}</strong> -
+                    {% set v = item.get("value") %}
+                    {% if v is mapping or v is sequence %}
+                      {% set vo = item.get("value_obj") or {} %}
+                      {% set vol = vo.get("volume") %}
+                      {% if vol %}
+                        {{ (vol/1000)|round(2) }}GB
+                      {% else %}
+                        N/A
+                      {% endif %}
+                    {% else %}
+                      {{ v or '' }}
+                    {% endif %}<br>
+                    <span class="d-block"><i class="fas fa-mobile-alt me-1 text-muted"></i><strong>{{ item.get("phone","") }}</strong></span>
+                    <span class="d-block mt-1"><i class="fas fa-tag me-1 text-muted"></i>&#8373;{{ "%.2f"|format(item.get("amount") or 0) }}</span>
+                    <div class="small text-muted mt-1">{{ item.get("api_status") or "?" }}</div>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </td>
+              <td class="text-center fw-semibold text-success">
+                <i class="fas fa-coins me-1"></i>&#8373;{{ "%.2f"|format(order.get("total_amount", 0) or 0) }}
+              </td>
+              <td class="text-center">
+                <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
+                  <span class="status-chip
+                  {% if st=='delivered' %}st-delivered
+                  {% elif st=='failed' %}st-failed
+                  {% elif st=='processing' %}st-processing
+                  {% elif st=='refunded' %}st-refunded
+                  {% elif st=='pending' %}st-pending
+                  {% elif st=='completed' %}st-completed
+                  {% else %}st-processing{% endif %}">
+                  <i class="fa-solid fa-circle"></i> {{ st|capitalize }}
+                  </span>
+                  <button type="button" class="btn btn-sm btn-outline-secondary btn-icon toggle-actions"
+                          data-actions="actions-{{ order['_id'] }}">
+                    <i class="fa-solid fa-ellipsis"></i> Actions
+                  </button>
+                </div>
+
+                <!-- Inline actions tray (desktop) -->
+                <div class="status-actions mt-2" id="actions-{{ order['_id'] }}">
+                  {% for newst in ['failed','refunded','processing','delivered'] %}
+                  <form method="POST" class="m-0 d-inline"
+                        action="{{ url_for('admin_orders.update_order_status', order_id=order['_id']) }}{% if filters_query %}?{{ filters_query }}{% endif %}">
+                    <input type="hidden" name="status" value="{{ newst }}">
+                    <button type="submit" class="btn btn-outline-{{ 'danger' if newst=='failed' else ('success' if newst=='delivered' else ('info' if newst=='processing' else 'primary')) }} btn-sm"
+                            {% if newst=='refunded' %}data-confirm="Mark this order as Refunded? This credits the customer's wallet if not already."{% endif %}>
+                      {{ newst|capitalize }}
+                    </button>
+                  </form>
+                  {% endfor %}
+                </div>
+              </td>
+              <td class="text-center">
+                {% set pf = (order.get("paid_from") or "N/A")|lower %}
+                <span class="pf-badge
+                  {% if pf=='wallet' %}pf-wallet
+                  {% elif pf=='card' %}pf-card
+                  {% elif pf=='momo' %}pf-momo
+                  {% elif pf=='paystack' %}pf-paystack
+                  {% elif pf=='flutterwave' %}pf-flutterwave
+                  {% elif pf=='bank' %}pf-bank
+                  {% else %}pf-card{% endif %}">
+                  <i class="fas fa-wallet me-1"></i>{{ pf|capitalize }}
+                </span>
+              </td>
+              <td class="text-center">
+                <small class="muted"><i class="fas fa-clock me-1"></i>
+                  {{ order.get("created_at").strftime('%Y-%m-%d %H:%M') if order.get("created_at") else 'N/A' }}
+                </small>
+              </td>
+              <td class="text-center">
+                <!-- Quick schedule button for this row -->
+                <button class="btn btn-sm btn-dark" data-quick-schedule="{{ order['_id'] }}" data-bs-toggle="modal" data-bs-target="#scheduleModal">
+                  <i class="fa-solid fa-calendar-plus"></i>
+                </button>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="9" class="text-center text-muted py-5">
+                <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                <h5>No orders found</h5>
+                <p class="mb-0">Try adjusting your filter criteria</p>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CARD LIST (xs-sm) -->
+    <div class="cards mb-5">
+      {% for order in orders %}
+      {% set st = (order.get('status') or '').lower() %}
+      <div class="order-card">
+        <div class="header">
+          <div>
+            <div class="fw-bold">#{{ order["order_id"] }}</div>
+            <div class="meta">
+              {{ (order["user"] or {}).get("first_name","") }} {{ (order["user"] or {}).get("last_name","") }} &bull;
+              <i class="fa-regular fa-clock"></i>
+              {{ order.get("created_at").strftime('%Y-%m-%d %H:%M') if order.get("created_at") else 'N/A' }}
+            </div>
+          </div>
+          <div>
+            <span class="status-chip
+              {% if st=='delivered' %}st-delivered
+              {% elif st=='failed' %}st-failed
+              {% elif st=='processing' %}st-processing
+              {% elif st=='refunded' %}st-refunded
+              {% elif st=='pending' %}st-pending
+              {% elif st=='completed' %}st-completed
+              {% else %}st-processing{% endif %}">
+              <i class="fa-solid fa-circle"></i> {{ st|capitalize }}
+            </span>
+          </div>
+        </div>
+
+        <div class="items">
+          {% for item in order["items"] %}
+          <div class="it">
+            <div>
+              <strong>{{ item["serviceName"] }}</strong> -
+              {% set v = item.get("value") %}
+              {% if v is mapping or v is sequence %}
+                {% set vo = item.get("value_obj") or {} %}
+                {% set vol = vo.get("volume") %}
+                {% if vol %}
+                  {{ (vol/1000)|round(2) }}GB
+                {% else %}
+                  N/A
+                {% endif %}
+              {% else %}
+                {{ v or '' }}
+              {% endif %}<br>
+              <small class="text-muted"><i class="fas fa-mobile-alt me-1"></i>{{ item.get("phone","") }}</small>
+              <div class="small text-muted mt-1">{{ item.get("api_status") or "?" }}</div>
+            </div>
+            <div class="fw-semibold">&#8373;{{ "%.2f"|format(item.get("amount") or 0) }}</div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="tot">
+          <span class="fw-semibold text-success"><i class="fas fa-coins me-1"></i>&#8373;{{ "%.2f"|format(order.get("total_amount", 0) or 0) }}</span>
+          {% set pf = (order.get("paid_from") or "N/A")|lower %}
+          <span class="pf-badge ms-auto
+            {% if pf=='wallet' %}pf-wallet
+            {% elif pf=='card' %}pf-card
+            {% elif pf=='momo' %}pf-momo
+            {% elif pf=='paystack' %}pf-paystack
+            {% elif pf=='flutterwave' %}pf-flutterwave
+            {% elif pf=='bank' %}pf-bank
+            {% else %}pf-card{% endif %}">
+            <i class="fas fa-wallet me-1"></i>{{ pf|capitalize }}
+          </span>
+        </div>
+
+      <div class="footer">
+          <input class="form-check-input row-check" type="checkbox" value="{{ order['_id'] }}">
+
+          <!-- MOBILE ACTIONS (always visible; no dropdowns) -->
+          <button class="btn btn-outline-secondary btn-sm w-100 toggle-actions" type="button"
+                  data-actions="card-actions-{{ order['_id'] }}">
+            <i class="fa-solid fa-ellipsis"></i> Actions
+          </button>
+          <div class="card-actions hidden" id="card-actions-{{ order['_id'] }}">
+            {% for newst in ['delivered','processing','failed','refunded'] %}
+            <form method="POST" action="{{ url_for('admin_orders.update_order_status', order_id=order['_id']) }}{% if filters_query %}?{{ filters_query }}{% endif %}">
+              <input type="hidden" name="status" value="{{ newst }}">
+              <button type="submit"
+                class="btn btn-outline-{{ 'success' if newst=='delivered' else ('info' if newst=='processing' else ('danger' if newst=='failed' else 'primary')) }} btn-sm"
+                {% if newst=='refunded' %}data-confirm="Mark this order as Refunded? This credits the customer's wallet if not already."{% endif %}>
+                {{ newst|capitalize }}
+              </button>
+            </form>
+            {% endfor %}
+            <button class="btn btn-dark btn-sm" data-quick-schedule="{{ order['_id'] }}" data-bs-toggle="modal" data-bs-target="#scheduleModal">
+              <i class="fa-solid fa-calendar-plus"></i> Schedule
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <div class="text-muted small">Page {{ page }} of {{ total_pages }}</div>
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          {% if page > 1 %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('admin_orders.admin_view_orders', page=page-1) }}{% if filters_query %}&{{ filters_query }}{% endif %}">
+                <i class="fas fa-chevron-left"></i> Prev
+              </a>
+            </li>
+          {% endif %}
+          {% for p in range(1, total_pages+1) %}
+            <li class="page-item {% if p == page %}active{% endif %}">
+              <a class="page-link" href="{{ url_for('admin_orders.admin_view_orders', page=p) }}{% if filters_query %}&{{ filters_query }}{% endif %}">
+                {{ p }}
+              </a>
+            </li>
+          {% endfor %}
+          {% if page < total_pages %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('admin_orders.admin_view_orders', page=page+1) }}{% if filters_query %}&{{ filters_query }}{% endif %}">
+                Next <i class="fas fa-chevron-right"></i>
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Hidden form for "Mark Selected -> Delivered" -->
+  <form method="POST" id="bulkSelectedDeliverForm" action="{{ url_for('admin_orders.bulk_deliver_selected') }}" class="d-none">
+    <input type="hidden" name="order_ids" id="bulkSelectedIds">
+  </form>
+
+  <!-- Floating bulk bar (mobile) -->
+  <div class="floating-bar" id="floatingBar">
+    <div><span id="selCount" class="badge bg-light text-dark">0</span> selected</div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-light btn-sm" id="fbSchedule" data-bs-toggle="modal" data-bs-target="#scheduleModal">
+        <i class="fa-solid fa-calendar-plus me-1"></i>Schedule
+      </button>
+      <button class="btn btn-success btn-sm" id="fbDeliver">
+        <i class="fa-solid fa-check-double me-1"></i>Deliver
+      </button>
+      <a href="{{ url_for('admin_orders.admin_view_orders') }}{% if filters_query %}?{{ filters_query }}{% endif %}" class="btn btn-light btn-sm">
+        Reset
+      </a>
+    </div>
+  </div>
+
+  <form method="POST" id="batchDeliverForm" class="d-none">
+    <input type="hidden" name="batch_mode" id="batchModeInput" value="selected">
+    <div id="batchSelectedLineInputs"></div>
+  </form>
+
+  <div class="modal fade" id="exportUndeliveredModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <form class="modal-content" method="POST" action="{{ url_for('admin_orders.export_undelivered_orders') }}">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fa-solid fa-file-export me-2"></i>Export Undelivered Orders</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Services</label>
+              <div class="service-checklist" id="exportServiceChecklist">
+                {% for service in export_services %}
+                  <label class="service-check">
+                    <span>
+                      <input class="form-check-input export-service-check me-2" type="checkbox" name="service_name" value="{{ service.name }}" data-network="{{ service.network }}">
+                      <span class="fw-semibold">{{ service.name }}</span>
+                    </span>
+                    <span class="small text-muted">{{ service.network or '-' }}</span>
+                  </label>
+                {% else %}
+                  <div class="text-muted small">No services found in catalog.</div>
+                {% endfor %}
+              </div>
+              <div class="form-text">Choose one or more services. Network is auto-guessed from your selection.</div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Network</label>
+              <select class="form-select" name="network" id="exportNetworkSelect">
+                <option value="ANY">ANY</option>
+                {% for network in export_networks %}
+                  <option value="{{ network }}">{{ network }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Source</label>
+              <select class="form-select" name="source">
+                {% for source in export_sources %}
+                  <option value="{{ source }}">{{ source|upper if source != 'all' else 'ALL' }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Format</label>
+              <select class="form-select" name="format">
+                <option value="txt">TXT</option>
+                <option value="excel">Excel</option>
+                <option value="pdf">PDF</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Timeframe</label>
+              <select class="form-select" name="timeframe" id="timeframeSelect">
+                <option value="today">Today</option>
+                <option value="custom">Custom date range</option>
+              </select>
+            </div>
+
+            <div class="col-12" id="todayTimeframeFields">
+              <div class="row g-3">
+                <div class="col-6">
+                  <label class="form-label">Today Start Time</label>
+                  <input class="form-control" type="time" name="today_start_time" value="00:00">
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Today End Time</label>
+                  <input class="form-control" type="time" name="today_end_time" value="23:59">
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 d-none" id="customTimeframeFields">
+              <div class="row g-3">
+                <div class="col-12 col-md-6">
+                  <label class="form-label">Date From</label>
+                  <input class="form-control" type="datetime-local" name="date_from">
+                </div>
+                <div class="col-12 col-md-6">
+                  <label class="form-label">Date To</label>
+                  <input class="form-control" type="datetime-local" name="date_to">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" type="submit">
+            <i class="fa-solid fa-download me-1"></i> Export
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal fade" id="exportHistoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fa-solid fa-id-badge me-2"></i>Export Batch History</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="exportBatchHistoryList" class="d-grid gap-2 small"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-primary" type="button" id="refreshExportBatches">Refresh</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="exportBatchDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div>
+            <h5 class="modal-title mb-1"><i class="fa-solid fa-badge-check me-2"></i><span id="batchDetailLabel">Batch Detail</span></h5>
+            <div class="small text-muted" id="batchDetailMeta"></div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3 mb-3">
+            <div class="col-6 col-md-3"><div class="export-batch-row"><div class="small text-muted">Badge</div><div class="fw-semibold" id="batchDetailBadge"></div></div></div>
+            <div class="col-6 col-md-3"><div class="export-batch-row"><div class="small text-muted">Network</div><div class="fw-semibold" id="batchDetailNetwork"></div></div></div>
+            <div class="col-6 col-md-3"><div class="export-batch-row"><div class="small text-muted">Count</div><div class="fw-semibold" id="batchDetailCount"></div></div></div>
+            <div class="col-6 col-md-3"><div class="export-batch-row"><div class="small text-muted">Created</div><div class="fw-semibold" id="batchDetailCreated"></div></div></div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="small text-muted">Select exported lines to mark as delivered.</div>
+            <div>
+              <input class="form-check-input" type="checkbox" id="batchDetailCheckAll">
+              <label class="form-check-label small ms-1" for="batchDetailCheckAll">Select all</label>
+            </div>
+          </div>
+
+          <div class="export-batch-lines" id="exportBatchLines"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Close</button>
+          <button class="btn btn-outline-success" type="button" id="markSelectedBatchLines">Mark Selected Delivered</button>
+          <button class="btn btn-success" type="button" id="markAllBatchLines">Mark All Delivered</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schedule Modal -->
+  <div class="modal fade" id="scheduleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <form class="modal-content" method="POST" action="{{ url_for('admin_orders.schedule_status') }}">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fa-solid fa-calendar-plus me-2"></i>Schedule Status Change</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Orders Selected</label>
+            <div class="small text-muted">You can select multiple orders from the list. This will populate automatically.</div>
+            <div id="selectedOrdersPreview" class="mt-2"></div>
+          </div>
+
+          <input type="hidden" name="order_ids" id="scheduleOrderIds">
+
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">New Status</label>
+              <select name="status" class="form-select" required>
+                {% for s in ['processing','delivered','failed','refunded','pending','completed'] %}
+                  <option value="{{ s }}">{{ s|capitalize }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label">Delay (minutes)</label>
+              <input type="number" min="0" step="1" class="form-control" name="delay_minutes" id="delayMinutes" placeholder="e.g., 10">
+              <div class="form-text">Set a delay OR specify an exact time below.</div>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label">Run At (UTC)</label>
+              <input type="datetime-local" class="form-control" id="runAtLocal" placeholder="YYYY-MM-DD HH:MM">
+              <input type="hidden" name="run_at" id="runAtUtc">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Note (optional)</label>
+              <input type="text" class="form-control" name="note" placeholder="Reason or extra info for audit">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" type="submit">
+            <i class="fa-solid fa-calendar-check me-1"></i> Schedule
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Offcanvas: Scheduled Jobs -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="jobsOffcanvas" aria-labelledby="jobsLabel">
+    <div class="offcanvas-header">
+      <h5 id="jobsLabel" class="mb-0"><i class="fa-solid fa-clock-rotate-left me-2"></i>Scheduled Jobs</h5>
+      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div id="jobsList" class="small"></div>
+      <div class="text-center mt-3">
+        <button class="btn btn-outline-primary btn-sm" id="refreshJobs"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ---------- helpers ----------
+    const $$ = (sel, root=document)=>Array.from(root.querySelectorAll(sel));
+    const $  = (sel, root=document)=>root.querySelector(sel);
+    const pad2 = n => String(n).padStart(2,'0');
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#39;'
+    }[ch]));
+    const exportBatchesUrl = '{{ url_for("admin_orders.list_export_batches") }}';
+    const exportBatchDetailBase = '{{ url_for("admin_orders.get_export_batch_detail", batch_id="__BATCH__") }}';
+    const exportBatchMarkBase = '{{ url_for("admin_orders.mark_export_batch_delivered", batch_id="__BATCH__") }}';
+    let activeBatchId = '';
+
+    // Mobile: toggle filter card
+    const toggleFiltersBtn = document.getElementById('toggleFilters');
+    const filtersCard = document.getElementById('filtersCard');
+    toggleFiltersBtn?.addEventListener('click', ()=>{
+      const willShow = !filtersCard.classList.contains('show');
+      filtersCard.classList.toggle('show', willShow);
+      toggleFiltersBtn.setAttribute('aria-expanded', willShow ? 'true' : 'false');
+    });
+
+    // Status actions toggle
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.toggle-actions');
+      if (!btn) return;
+      const targetId = btn.getAttribute('data-actions');
+      const el = targetId ? document.getElementById(targetId) : null;
+      if (!el) return;
+      if (el.classList.contains('status-actions')) {
+        el.classList.toggle('show');
+      } else {
+        el.classList.toggle('hidden');
+      }
+    });
+
+    // Select all / per-row selection (desktop)
+    const checkAll = document.getElementById('checkAll');
+    function getSelectedIds(){
+      return $$('.row-check').filter(c => c.checked).map(c => c.value);
+    }
+    checkAll?.addEventListener('change', () => {
+      $$('.row-check').forEach(c => c.checked = checkAll.checked);
+      updateFloatingBar();
+    });
+
+    // sync floating bar on any checkbox change
+    document.addEventListener('change', (e)=>{
+      if (e.target.classList.contains('row-check')) updateFloatingBar();
+    });
+
+    // Schedule modal wiring
+    const openSelBtn = document.getElementById('openScheduleSelected');
+    const scheduleOrderIds = document.getElementById('scheduleOrderIds');
+    const selectedOrdersPreview = document.getElementById('selectedOrdersPreview');
+    const runAtLocal = document.getElementById('runAtLocal');
+    const runAtUtc = document.getElementById('runAtUtc');
+
+    openSelBtn?.addEventListener('click', () => {
+      const ids = getSelectedIds();
+      scheduleOrderIds.value = ids.join(',');
+      selectedOrdersPreview.innerHTML = ids.length
+        ? `<span class="badge text-bg-dark">${ids.length}</span> selected`
+        : `<span class="text-danger">No orders selected yet - you can still add one from the list.</span>`;
+    });
+
+    // Per-row quick schedule adds that row to modal
+    document.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-quick-schedule]');
+      if (!b) return;
+      const id = b.getAttribute('data-quick-schedule');
+      const current = scheduleOrderIds.value ? scheduleOrderIds.value.split(',').filter(Boolean) : [];
+      if (!current.includes(id)) current.push(id);
+      scheduleOrderIds.value = current.join(',');
+      selectedOrdersPreview.innerHTML = `<span class="badge text-bg-dark">${current.length}</span> selected`;
+    });
+
+    // Convert datetime-local (local) -> UTC "YYYY-MM-DD HH:MM"
+    runAtLocal?.addEventListener('change', () => {
+      if (!runAtLocal.value){ runAtUtc.value = ''; return; }
+      const dt = new Date(runAtLocal.value);
+      const y = dt.getUTCFullYear(), m = pad2(dt.getUTCMonth()+1), d = pad2(dt.getUTCDate());
+      const hh = pad2(dt.getUTCHours()), mm = pad2(dt.getUTCMinutes());
+      runAtUtc.value = `${y}-${m}-${d} ${hh}:${mm}`;
+    });
+
+    // Jobs offcanvas loader
+    async function loadJobs(){
+      const list = document.getElementById('jobsList');
+      list.innerHTML = '<div class="text-center text-muted py-2"><i class="fa-solid fa-spinner fa-spin me-2"></i>Loading...</div>';
+      try{
+        const res = await fetch('{{ url_for("admin_orders.list_schedules") }}', {credentials:'same-origin'});
+        if (!res.ok) throw new Error('Network');
+        const data = await res.json();
+        if (!data.jobs || !data.jobs.length){
+          list.innerHTML = '<div class="text-center text-muted">No scheduled jobs.</div>';
+          return;
+        }
+        const baseCancel = '{{ url_for("admin_orders.cancel_schedule", job_id="__JOB__") }}';
+        list.innerHTML = data.jobs.map(j => {
+          const cancelUrl = baseCancel.replace('__JOB__', encodeURIComponent(j.id));
+          const statusTxt = (Array.isArray(j.args) && j.args[1]) ? `Status &rarr; <b>${j.args[1]}</b>` : '';
+          return `
+          <div class="schedule-row">
+            <div>
+              <div><strong>ID:</strong> <code>${j.id}</code></div>
+              <div class="muted"><i class="fa-regular fa-clock me-1"></i>${j.next_run_time ?? '-'}</div>
+              <div class="muted"><small>${statusTxt}</small></div>
+            </div>
+            <form method="POST" action="${cancelUrl}">
+              <button class="btn btn-sm btn-outline-danger" data-confirm="Cancel this schedule?">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </form>
+          </div>`;
+        }).join('');
+      }catch(e){
+        list.innerHTML = '<div class="text-danger">Failed to load schedules.</div>';
+      }
+    }
+    const jobsOffcanvas = document.getElementById('jobsOffcanvas');
+    jobsOffcanvas?.addEventListener('shown.bs.offcanvas', loadJobs);
+    document.getElementById('refreshJobs')?.addEventListener('click', loadJobs);
+
+    // Floating bulk bar (mobile)
+    const floatingBar = document.getElementById('floatingBar');
+    const selCount = document.getElementById('selCount');
+    const fbSchedule = document.getElementById('fbSchedule');
+    const fbDeliver = document.getElementById('fbDeliver');
+
+    function updateFloatingBar(){
+      const count = getSelectedIds().length;
+      selCount.textContent = count;
+      if (count > 0) floatingBar.classList.add('show');
+      else floatingBar.classList.remove('show');
+    }
+
+    fbSchedule?.addEventListener('click', ()=>{
+      const ids = getSelectedIds();
+      scheduleOrderIds.value = ids.join(',');
+      selectedOrdersPreview.innerHTML = ids.length
+        ? `<span class="badge text-bg-dark">${ids.length}</span> selected`
+        : `<span class="text-danger">No orders selected yet.</span>`;
+    });
+
+    // Bulk Selected -> Delivered (desktop button)
+    const markSelectedDeliveredBtn = document.getElementById('markSelectedDelivered');
+    const bulkSelectedDeliverForm = document.getElementById('bulkSelectedDeliverForm');
+    const bulkSelectedIds = document.getElementById('bulkSelectedIds');
+    const timeframeSelect = document.getElementById('timeframeSelect');
+    const todayTimeframeFields = document.getElementById('todayTimeframeFields');
+    const customTimeframeFields = document.getElementById('customTimeframeFields');
+    const exportServiceChecks = $$('.export-service-check');
+    const exportNetworkSelect = document.getElementById('exportNetworkSelect');
+    const exportBatchHistoryList = document.getElementById('exportBatchHistoryList');
+    const exportHistoryModal = document.getElementById('exportHistoryModal');
+    const exportBatchLines = document.getElementById('exportBatchLines');
+    const batchDeliverForm = document.getElementById('batchDeliverForm');
+    const batchSelectedLineInputs = document.getElementById('batchSelectedLineInputs');
+    const batchDetailCheckAll = document.getElementById('batchDetailCheckAll');
+
+    function syncTimeframeFields(){
+      const mode = timeframeSelect?.value || 'today';
+      todayTimeframeFields?.classList.toggle('d-none', mode !== 'today');
+      customTimeframeFields?.classList.toggle('d-none', mode !== 'custom');
+    }
+    timeframeSelect?.addEventListener('change', syncTimeframeFields);
+    syncTimeframeFields();
+
+    function autoGuessNetworkFromServices(){
+      const checked = exportServiceChecks.filter(input => input.checked);
+      if (!checked.length){
+        exportNetworkSelect.value = 'ANY';
+        return;
+      }
+      const networks = [...new Set(checked.map(input => (input.dataset.network || '').trim()).filter(Boolean))];
+      if (networks.length === 1){
+        exportNetworkSelect.value = networks[0];
+      } else {
+        exportNetworkSelect.value = 'ANY';
+      }
+    }
+    exportServiceChecks.forEach(input => input.addEventListener('change', autoGuessNetworkFromServices));
+
+    async function loadExportBatches(){
+      if (!exportBatchHistoryList) return;
+      exportBatchHistoryList.innerHTML = '<div class="text-center text-muted py-3"><i class="fa-solid fa-spinner fa-spin me-2"></i>Loading export batches...</div>';
+      try{
+        const res = await fetch(exportBatchesUrl, {credentials:'same-origin'});
+        if (!res.ok) throw new Error('network');
+        const data = await res.json();
+        const batches = data.batches || [];
+        if (!batches.length){
+          exportBatchHistoryList.innerHTML = '<div class="text-center text-muted py-3">No export batches yet.</div>';
+          return;
+        }
+        exportBatchHistoryList.innerHTML = batches.map(batch => `
+          <button type="button" class="btn text-start export-batch-row open-batch-detail" data-batch-id="${batch.id}">
+            <div class="d-flex justify-content-between align-items-start gap-3">
+              <div>
+                <div class="fw-semibold">${escapeHtml(batch.label || batch.badge_no)}</div>
+                <div class="small text-muted">${escapeHtml(batch.badge_no)} | ${escapeHtml(batch.network || 'NETWORK')} | ${escapeHtml(batch.source || 'all')}</div>
+              </div>
+              <div class="text-end small">
+                <div>${escapeHtml(batch.count || 0)} line(s)</div>
+                <div class="text-muted">${escapeHtml(batch.created_at || '')}</div>
+              </div>
+            </div>
+          </button>
+        `).join('');
+      }catch(err){
+        exportBatchHistoryList.innerHTML = '<div class="text-danger py-3">Failed to load export history.</div>';
+      }
+    }
+    exportHistoryModal?.addEventListener('shown.bs.modal', loadExportBatches);
+    document.getElementById('refreshExportBatches')?.addEventListener('click', loadExportBatches);
+
+    function selectedBatchLineIds(){
+      return $$('.batch-line-check', exportBatchLines).filter(input => input.checked).map(input => input.value);
+    }
+
+    function submitBatchDeliver(mode){
+      if (!activeBatchId) return;
+      batchDeliverForm.action = exportBatchMarkBase.replace('__BATCH__', encodeURIComponent(activeBatchId));
+      batchSelectedLineInputs.innerHTML = '';
+      if (mode === 'selected'){
+        const ids = selectedBatchLineIds();
+        if (!ids.length){
+          alert('Select at least one exported line.');
+          return;
+        }
+        ids.forEach(id => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'line_id';
+          input.value = id;
+          batchSelectedLineInputs.appendChild(input);
+        });
+      }
+      batchDeliverForm.submit();
+    }
+
+    async function openBatchDetail(batchId){
+      activeBatchId = batchId;
+      const detailUrl = exportBatchDetailBase.replace('__BATCH__', encodeURIComponent(batchId));
+      exportBatchLines.innerHTML = '<div class="text-center text-muted py-3"><i class="fa-solid fa-spinner fa-spin me-2"></i>Loading batch detail...</div>';
+      const historyInstance = bootstrap.Modal.getInstance(exportHistoryModal);
+      historyInstance?.hide();
+      const modal = new bootstrap.Modal(document.getElementById('exportBatchDetailModal'));
+      modal.show();
+      try{
+        const res = await fetch(detailUrl, {credentials:'same-origin'});
+        if (!res.ok) throw new Error('network');
+        const data = await res.json();
+        const batch = data.batch || {};
+        $('#batchDetailLabel').textContent = batch.label || 'Batch Detail';
+        $('#batchDetailMeta').textContent = `${batch.timeframe_label || ''}`;
+        $('#batchDetailBadge').textContent = batch.badge_no || '-';
+        $('#batchDetailNetwork').textContent = batch.network || 'NETWORK';
+        $('#batchDetailCount').textContent = String(batch.count || 0);
+        $('#batchDetailCreated').textContent = batch.created_at || '';
+        const lines = batch.lines || [];
+        exportBatchLines.innerHTML = lines.length ? lines.map((line, idx) => `
+          <label class="line-row">
+            <input class="form-check-input batch-line-check mt-1" type="checkbox" value="${escapeHtml(line.line_id || '')}">
+            <div class="flex-grow-1">
+              <div class="fw-semibold">${escapeHtml(line.phone || '-')} ${escapeHtml(line.offer || '')}</div>
+              <div class="small text-muted">Order ${escapeHtml(line.order_id || '-')} | ${escapeHtml(line.service_name || '-')} | ${escapeHtml(line.network || '-')} | ${escapeHtml(line.line_status || line.status || '-')}</div>
+            </div>
+            <div class="small text-muted">#${idx + 1}</div>
+          </label>
+        `).join('') : '<div class="text-muted">No lines in this batch.</div>';
+        batchDetailCheckAll.checked = false;
+      }catch(err){
+        exportBatchLines.innerHTML = '<div class="text-danger py-3">Failed to load batch detail.</div>';
+      }
+    }
+
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('.open-batch-detail');
+      if (!trigger) return;
+      openBatchDetail(trigger.getAttribute('data-batch-id'));
+    });
+
+    batchDetailCheckAll?.addEventListener('change', () => {
+      $$('.batch-line-check', exportBatchLines).forEach(input => {
+        input.checked = batchDetailCheckAll.checked;
+      });
+    });
+    document.getElementById('markSelectedBatchLines')?.addEventListener('click', () => submitBatchDeliver('selected'));
+    document.getElementById('markAllBatchLines')?.addEventListener('click', () => submitBatchDeliver('all'));
+
+    function submitBulkDeliverSelected(){
+      const ids = getSelectedIds();
+      if (!ids.length){
+        alert('Select at least one order.');
+        return;
+      }
+      bulkSelectedIds.value = ids.join(',');
+      bulkSelectedDeliverForm.submit();
+    }
+
+    markSelectedDeliveredBtn?.addEventListener('click', submitBulkDeliverSelected);
+    fbDeliver?.addEventListener('click', submitBulkDeliverSelected);
+
+    // Centralized confirm (for any data-confirm buttons)
+    document.addEventListener('click', (e) => {
+      const submitBtn = e.target.closest('button[type="submit"][data-confirm], .btn[data-confirm]');
+      if (!submitBtn) return;
+      const msg = submitBtn.getAttribute('data-confirm') || 'Are you sure?';
+      if (!window.confirm(msg)) { e.preventDefault(); e.stopPropagation(); }
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,2148 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>SpeedLink - {{ store.name or 'Store' }}</title>
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+  {% set t = store.theme or {} %}
+  <meta name="theme-color" content="{{ t.primary or '#0EA5E9' }}"/>
+
+  {% if canonical_url %}
+    <link rel="canonical" href="{{ canonical_url }}">
+  {% endif %}
+
+  <meta name="description" content="{{ (store.hero.subtitle if store.hero else '') or ('Shop bundles & services from ' ~ store.name ~ ' with instant checkout.') }}"/>
+
+  <link rel="icon" type="image/png"
+        href="{{ url_for('brand_images', filename='logo_for_white_bg.png') }}">
+
+  <!-- Fonts & Bootstrap -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+
+  <style>
+    :root{
+      --primary: {{ t.primary or '#0EA5E9' }};
+      --accent:  {{ t.accent  or '#0A1A2F' }};
+      --bg:      {{ t.bg      or '#ffffff' }};
+      --text:    {{ t.text    or '#111827' }};
+
+      --ink:#0f172a;
+      --muted:#64748b;
+      --card:#ffffff;
+
+      --ring: rgba(15,23,42,.10);
+      --ring2: rgba(15,23,42,.14);
+
+      --shadow: 0 18px 45px rgba(15,23,42,.08);
+      --shadow2: 0 28px 70px rgba(15,23,42,.14);
+
+      --glass: rgba(255,255,255,.82);
+      --glass2: rgba(255,255,255,.92);
+    }
+
+    html,body{ height:100%; }
+    body{
+      color:var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      -webkit-font-smoothing:antialiased;
+      background:
+        radial-gradient(circle at 14% 0, rgba(14,165,233,.12), transparent 45%),
+        radial-gradient(circle at 86% 10%, rgba(34,197,94,.10), transparent 45%),
+        var(--bg);
+      overflow-x:hidden;
+    }
+    .container-wide{
+      width:90vw;
+      max-width:1600px;
+    }
+
+    :focus-visible{
+      outline: 3px solid rgba(14,165,233,.35);
+      outline-offset: 2px;
+      border-radius: 12px;
+    }
+
+    .reveal{
+      opacity:0;
+      transform: translateY(10px);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+    .reveal.in{ opacity:1; transform: translateY(0); }
+
+    .navbar{
+      background:#ffffff;
+      backdrop-filter:saturate(160%) blur(10px);
+      border-bottom:1px solid #e5e7eb;
+      box-shadow:0 8px 24px rgba(15,23,42,.04);
+      padding-top:.8rem;
+      padding-bottom:.8rem;
+    }
+    .brand-wrap{
+      display:flex; align-items:center; gap:.75rem;
+      color:var(--ink); text-decoration:none;
+      min-width: 0;
+    }
+    .brand-logo{
+      width:46px; height:46px;
+      border-radius:16px;
+      border:1px solid #e5e7eb;
+      object-fit:cover; display:block;
+      background:#fff;
+      box-shadow:0 10px 24px rgba(15,23,42,.08);
+      flex: 0 0 auto;
+    }
+    .brand-text{
+      color:var(--ink);
+      font-weight:800;
+      letter-spacing:0;
+      font-size:1rem;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 56vw;
+    }
+    .brand-sub{ font-size:.78rem; color:var(--muted); line-height: 1.1; }
+    .nav-link{ color:#475569 !important; font-weight:700; font-size:.88rem; }
+    .nav-link:hover{ color:var(--primary) !important; }
+
+    .hero{
+      position:relative;
+      min-height:28vh;
+      display:flex;
+      align-items:center;
+      color:var(--ink);
+      overflow:hidden;
+      border-bottom:1px solid #e5e7eb;
+    }
+    .hero-inner{
+      padding:2.2rem 0 2.2rem;
+      position:relative;
+      z-index:1;
+      margin:0;
+      animation:fadeInUpHero .55s ease-out;
+    }
+    .hero-shell{
+      border-radius:24px;
+      padding:1.5rem 1.6rem;
+      background:rgba(255,255,255,.58);
+      border:1px solid rgba(255,255,255,.6);
+      box-shadow:0 20px 50px rgba(15,23,42,.08);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+    }
+    .hero-grid{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:1rem;
+      align-items:end;
+    }
+    .hero-kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      padding:.34rem .78rem;
+      border-radius:999px;
+      background:rgba(255,255,255,.75);
+      border:1px solid rgba(255,255,255,.68);
+      box-shadow:0 10px 22px rgba(15,23,42,.05);
+      font-size:.75rem;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#475569;
+      margin-bottom:.8rem;
+    }
+    .hero-kicker-dot{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:linear-gradient(135deg,var(--primary),#22c55e);
+    }
+    .hero h1{
+      font-weight:900;
+      letter-spacing:-.03em;
+      font-size:2.15rem;
+      margin-bottom:.25rem;
+      line-height:1.02;
+    }
+    .hero-theme-line{
+      max-width:760px;
+      font-size:.98rem;
+      color:#475569;
+      font-weight:600;
+    }
+    .hero-cta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.75rem;
+      align-items:center;
+      justify-content:flex-end;
+    }
+    .btn-pill{ border-radius:999px; font-weight:900; padding:.72rem 1.5rem; font-size:.92rem; }
+    .btn-darkish{
+      background:linear-gradient(135deg,#0f172a,#111827);
+      border:1px solid rgba(15,23,42,.18);
+      color:#f8fafc;
+      box-shadow:0 18px 40px rgba(15,23,42,.18);
+      transition: transform .15s ease, filter .15s ease;
+    }
+    .btn-darkish:hover{ filter:brightness(.98); transform:translateY(-1px); color:#fff; }
+    .hero-status{
+      font-size:.82rem;
+      color:#64748b;
+      display:flex;
+      align-items:center;
+      gap:.45rem;
+      justify-content:flex-end;
+      width:100%;
+    }
+    .hero-status-dot{
+      width:8px;height:8px;border-radius:999px;
+      background:linear-gradient(135deg,#22c55e,#a3e635);
+      box-shadow:0 0 0 4px rgba(34,197,94,.15);
+    }
+    .hero-overlay{
+      position:absolute; inset:0; pointer-events:none;
+      background:
+        radial-gradient(circle at 12% 0, rgba(255,255,255,.5), transparent 44%),
+        radial-gradient(circle at 90% 10%, rgba(255,255,255,.42), transparent 38%);
+      opacity:1;
+    }
+
+    .services-section{ padding:2rem 0 4.5rem; }
+    .section-title{ font-weight:950; letter-spacing:.16em; text-transform:uppercase; font-size:.86rem; color:#64748b; }
+    .section-sub{ font-size:.92rem; color:var(--muted); }
+    .browse-copy{
+      display:grid;
+      gap:.2rem;
+    }
+
+    .tabs-wrap{ position:sticky; top:72px; z-index:900; margin-top:-18px; padding-top:18px; }
+    .tabs-card{
+      background:linear-gradient(180deg,#ffffff,#fbfdff);
+      backdrop-filter:saturate(160%) blur(10px);
+      border:1px solid #e5e7eb;
+      border-radius:18px;
+      box-shadow:0 20px 50px rgba(15,23,42,.06);
+      padding:.85rem 1rem;
+    }
+    .nav-pills .nav-link{
+      border-radius:999px !important;
+      font-weight:800;
+      font-size:.84rem;
+      padding:.5rem .95rem;
+      color:#374151 !important;
+      background:transparent;
+      border:1px solid #e5e7eb;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .nav-pills .nav-link:hover{ transform: translateY(-1px); box-shadow:0 14px 30px rgba(15,23,42,.08); }
+    .nav-pills .nav-link.active{
+      background:linear-gradient(135deg, var(--primary), #0ea5e9) !important;
+      color:#fff !important;
+      border-color:transparent;
+      box-shadow:0 14px 36px rgba(56,189,248,.28);
+    }
+
+    .service-card{
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      border-radius:18px;
+      overflow:hidden;
+      height:100%;
+      box-shadow:0 14px 34px rgba(15,23,42,.06);
+      transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+      position:relative;
+    }
+    .service-card:hover{ transform:translateY(-2px); box-shadow:0 20px 44px rgba(15,23,42,.1); border-color:#dbeafe; }
+
+    .thumb{
+      position:relative;
+      width:100%;
+      background:
+        linear-gradient(135deg,rgba(248,250,252,.92),rgba(255,255,255,.7)),
+        linear-gradient(135deg,#e0f2fe,#f8fafc);
+      border-bottom:1px solid #e5e7eb;
+      overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .thumb.thumb-service{ height:170px; }
+    .thumb.thumb-product{ aspect-ratio: 4 / 3; }
+    .thumb img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      object-position:center;
+      display:block;
+      padding:10px;
+      background: transparent;
+    }
+    .thumb::after{
+      content:"";
+      position:absolute; inset:0;
+      background:linear-gradient(180deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.65) 100%);
+      pointer-events:none;
+      opacity:.9;
+    }
+
+    .service-body{
+      padding:13px;
+      display:flex;
+      flex-direction:column;
+      position:relative;
+      z-index:1;
+      min-height: 180px;
+    }
+    .service-title{ font-weight:850; color:#111827; font-size:1rem; margin-bottom:.12rem; line-height:1.25; }
+    .service-meta{ color:var(--muted); font-size:.78rem; }
+
+    .badge-soft{
+      background:rgba(34,197,94,.12);
+      color:#15803d;
+      border-radius:999px;
+      padding:.16rem .65rem;
+      font-size:.74rem;
+      border:1px solid rgba(34,197,94,.22);
+      white-space:nowrap;
+      font-weight:900;
+    }
+    .badge-dangerish{
+      border-radius:999px;
+      font-size:.76rem;
+      font-weight:900;
+      padding:.18rem .65rem;
+      background:rgba(239,68,68,.12);
+      border:1px solid rgba(239,68,68,.24);
+      color:#b91c1c;
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      max-width: 100%;
+    }
+    .card-badges{
+      position:absolute;
+      top:10px;
+      left:10px;
+      z-index:3;
+      display:flex;
+      flex-wrap:wrap;
+      gap:.38rem;
+      pointer-events:none;
+    }
+    .pro-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.28rem;
+      border-radius:999px;
+      padding:.28rem .58rem;
+      font-size:.68rem;
+      line-height:1;
+      font-weight:950;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.54);
+      box-shadow:0 10px 22px rgba(15,23,42,.18), inset 0 1px 0 rgba(255,255,255,.30);
+      backdrop-filter:blur(8px);
+    }
+    .pro-badge-hot{ background:linear-gradient(135deg,#ef4444,#f97316); }
+    .pro-badge-new{ background:linear-gradient(135deg,#06b6d4,#2563eb); }
+
+    .quick-form{
+      display:none;
+      background:rgba(248,250,252,.92);
+      border:1px dashed rgba(15,23,42,.18);
+      border-radius:14px;
+      padding:12px;
+      margin-top:10px;
+      animation:fadeIn .18s ease-out;
+    }
+    .quick-form.show{ display:block; }
+    .quick-form .form-label{ font-size:.78rem; color:var(--muted); font-weight:800; }
+    .quick-form .form-control,
+    .quick-form .form-select{
+      border-radius:12px;
+      border:1px solid rgba(15,23,42,.14);
+      background:#ffffff;
+      color:var(--ink);
+      box-shadow:0 10px 18px rgba(15,23,42,.05);
+    }
+    .quick-form .form-control-lg,
+    .quick-form .form-select-lg{ font-size:1rem; padding:.78rem 1rem; }
+
+    .btn-primary{
+      background:linear-gradient(135deg, var(--primary), #0284c7);
+      border:1px solid rgba(2,132,199,.28);
+      font-weight:950;
+      border-radius:999px;
+      font-size:.92rem;
+      box-shadow:0 16px 34px rgba(14,165,233,.22);
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .btn-primary:hover{ filter:brightness(.98); transform:translateY(-1px); }
+    .btn-success{ border-radius:999px; font-weight:950; }
+    .btn-outline-danger,.btn-outline-secondary{ border-radius:999px; font-weight:900; }
+
+    .price-tag{ font-weight:950; font-size:1.05rem; color:#0f172a; letter-spacing:-.01em; }
+    .muted-line{ color:var(--muted); font-size:.9rem; }
+
+    /* Layouts (store.layout) */
+    .services-grid,
+    .products-grid,
+    .reco-grid{
+      display:grid;
+      gap: 16px;
+    }
+    .products-grid .pcol{ grid-column: auto; }
+    .reco-item{ grid-column: auto; }
+
+    body[data-layout="grid-1"] .services-grid,
+    body[data-layout="grid-1"] .products-grid,
+    body[data-layout="grid-1"] .reco-grid{
+      grid-template-columns: 1fr;
+    }
+    body[data-layout="grid-2"] .services-grid,
+    body[data-layout="grid-2"] .products-grid,
+    body[data-layout="grid-2"] .reco-grid{
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    body[data-layout="cards"] .services-grid,
+    body[data-layout="cards"] .products-grid,
+    body[data-layout="cards"] .reco-grid{
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    /* keep services rail layout */
+    .services-layout{ display:grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 992px){
+      .services-layout{ grid-template-columns: 1fr 340px; align-items:start; }
+    }
+
+    /* small screens: reduce gap a bit so 2-up fits nicer */
+    @media (max-width: 420px){
+      .services-grid{ gap: 12px; }
+      .products-grid{ gap: 12px; }
+      .reco-grid{ gap: 10px; }
+      .service-body{ padding: 12px 12px 14px; }
+      .service-title{ font-size: 1rem; }
+      .thumb.thumb-service{ height: 150px; }
+    }
+
+    .rail{
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      border-radius:18px;
+      box-shadow:0 14px 34px rgba(15,23,42,.06);
+      overflow:hidden;
+      position:sticky;
+      top: 96px;
+    }
+    .rail-head{
+      padding:14px 14px 10px;
+      border-bottom:1px solid rgba(15,23,42,.08);
+      background:#ffffff;
+    }
+    .rail-title{ font-weight:950; letter-spacing:.08em; text-transform:uppercase; font-size:.78rem; color:#475569; margin:0; }
+    .rail-sub{ margin:4px 0 0; color:var(--muted); font-size:.86rem; }
+    .rail-body{ padding:12px; display:grid; gap:10px; }
+
+    .mini-card{
+      display:flex; gap:10px;
+      padding:10px;
+      border:1px solid rgba(15,23,42,.10);
+      border-radius:14px;
+      background: rgba(255,255,255,.85);
+      box-shadow: 0 12px 26px rgba(15,23,42,.06);
+      transition: transform .12s ease, box-shadow .12s ease;
+      cursor: pointer;
+      text-decoration:none;
+      color: inherit;
+    }
+    .mini-card:hover{ transform: translateY(-1px); box-shadow: 0 18px 38px rgba(15,23,42,.10); }
+    .mini-img{
+      width:64px; height:52px;
+      border-radius:12px;
+      border:1px solid rgba(15,23,42,.10);
+      background:#fff;
+      overflow:hidden;
+      flex: 0 0 auto;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .mini-img img{ width:100%; height:100%; object-fit:contain; padding:6px; }
+    .mini-info{ min-width:0; }
+    .mini-name{
+      font-weight:900;
+      font-size:.92rem;
+      margin:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color: var(--ink);
+    }
+    .mini-price{ font-weight:950; font-size:.9rem; color:#0f172a; margin-top:2px; }
+    .mini-note{ font-size:.78rem; color:var(--muted); margin-top:2px; }
+
+    .fab-cart{
+      position:fixed;
+      right:18px; bottom:18px;
+      width:60px; height:60px;
+      border-radius:50%;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg, var(--primary), #0284c7);
+      border:none;
+      box-shadow:0 20px 48px rgba(14,165,233,.24);
+      cursor:pointer;
+      transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+      z-index:1100;
+      color:#ffffff;
+    }
+    .fab-cart:hover{ transform:translateY(-2px); box-shadow:0 26px 56px rgba(15,23,42,.26); filter:brightness(.98); }
+    .fab-cart i{ font-size:1.45rem; }
+    .fab-cart .badge{
+      position:absolute;
+      top:-6px; right:-6px;
+      background:#ef4444;
+      color:#fff;
+      font-weight:950;
+      border-radius:999px;
+      padding:.32rem .58rem;
+      font-size:.74rem;
+      box-shadow:0 6px 16px rgba(239,68,68,.45);
+      border:2px solid rgba(255,255,255,.85);
+    }
+    .fab-cart.hide{ display:none !important; }
+    .status-note{ font-size:.9rem; color:var(--muted); }
+
+    .modal-content{
+      background:rgba(255,255,255,.96);
+      backdrop-filter:saturate(160%) blur(10px);
+      color:var(--ink);
+      border-radius:18px;
+      border:1px solid rgba(15,23,42,.10);
+      box-shadow:0 28px 80px rgba(15,23,42,.22);
+    }
+    .modal-header{ border-bottom:1px solid rgba(15,23,42,.10); }
+    .modal-footer{ border-top:1px solid rgba(15,23,42,.10); color:var(--muted); font-size:.82rem; }
+    .table thead th{
+      white-space:nowrap;
+      font-weight:950;
+      color:#64748b;
+      border-bottom:1px solid rgba(15,23,42,.10)!important;
+    }
+    .table tbody tr{ border-color:rgba(15,23,42,.08)!important; }
+    .table tbody tr:hover{ background:rgba(248,250,252,.9); }
+    .table{ font-size:.88rem; }
+
+    .reco-tile{
+      border:1px solid rgba(15,23,42,.10);
+      border-radius:16px;
+      overflow:hidden;
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 18px 40px rgba(15,23,42,.08);
+      transition: transform .12s ease, box-shadow .12s ease;
+      height: 100%;
+      display:flex;
+      flex-direction:column;
+    }
+    .reco-tile:hover{ transform: translateY(-2px); box-shadow: 0 28px 60px rgba(15,23,42,.12); }
+    .reco-thumb{
+      aspect-ratio: 4 / 3;
+      border-bottom:1px solid rgba(15,23,42,.06);
+      background:#fff;
+      display:flex; align-items:center; justify-content:center;
+      overflow:hidden;
+    }
+    .reco-thumb img{ width:100%; height:100%; object-fit:contain; padding:10px; }
+    .reco-body{ padding:12px; display:flex; flex-direction:column; gap:6px; flex:1; }
+    .reco-name{ font-weight:950; margin:0; font-size:1rem; color:var(--ink); }
+    .reco-meta{ color:var(--muted); font-size:.85rem; margin:0; }
+    .reco-actions{ margin-top:auto; display:flex; gap:8px; flex-wrap:wrap; }
+
+    .btn-soft{
+      border-radius:999px;
+      font-weight:900;
+      border:1px solid rgba(15,23,42,.12);
+      background: rgba(255,255,255,.9);
+      color: var(--ink);
+      padding: .55rem .9rem;
+      transition: transform .12s ease;
+    }
+    .btn-soft:hover{ transform: translateY(-1px); }
+
+    .footer{
+      background:rgba(255,255,255,.84);
+      backdrop-filter:saturate(160%) blur(10px);
+      border-top:1px solid rgba(15,23,42,.08);
+      color:#64748b;
+      font-size:.84rem;
+    }
+    .footer a{ color:inherit; font-weight:900; text-decoration:none; }
+    .footer a:hover{ color:var(--primary); text-decoration:underline; }
+    .footer-badges{ display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; justify-content:flex-end; }
+    .mini-pill{
+      display:inline-flex; align-items:center; gap:.4rem;
+      border:1px solid rgba(15,23,42,.12);
+      padding:.35rem .65rem;
+      border-radius:999px;
+      background:rgba(255,255,255,.85);
+      box-shadow:0 10px 20px rgba(15,23,42,.06);
+      font-weight:950;
+      font-size:.82rem;
+      color:#0f172a;
+      white-space:nowrap;
+    }
+
+    .toast-dark{
+      background:#0f172a;
+      color:#f8fafc;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:0 20px 55px rgba(15,23,42,.30);
+    }
+    .toast-dark .btn-close{ filter:invert(1); }
+
+    @keyframes fadeIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+    @keyframes fadeInUpHero{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+
+    @media (prefers-reduced-motion: reduce){
+      *{ animation:none!important; transition:none!important; scroll-behavior:auto!important; }
+    }
+    @media (max-width: 576px){
+      .hero{ min-height: 24vh; }
+      .hero h1{ font-size: 1.58rem; }
+      .hero-inner{ padding: 1.8rem 0; }
+      .hero-shell{ padding:1.25rem; }
+      .hero-grid{ grid-template-columns:1fr; align-items:start; }
+      .hero-cta{ justify-content:flex-start; }
+      .hero-status{ justify-content:flex-start; }
+      .brand-text{ max-width: 62vw; }
+      .thumb.thumb-service{ height: 155px; }
+      .fab-cart{ right:14px; bottom:14px; width:58px; height:58px; }
+      .tabs-wrap{ top:64px; }
+    }
+      /* Ported number modal */
+      .ported-modal .modal-header{background:#fff7ed;border-bottom:1px solid #fed7aa}
+      .ported-modal .warn-icon{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:999px;background:#ffedd5;color:#b45309}
+      .ported-modal .prefix-badges{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
+      .ported-modal .prefix-badges .badge{font-size:.78rem}
+    </style>
+
+  {% set hero_bg = (store.hero.bg_image if store.hero and store.hero.bg_image else None) %}
+  {% if hero_bg %}
+  <style>
+    .hero{
+      background:
+        {{ (t.hero_gradient or 'linear-gradient(135deg,#e0f2fe 0%,#ffffff 54%,#cffafe 100%)')|safe }},
+        url('{{ hero_bg }}') center/cover no-repeat;
+    }
+  </style>
+  {% else %}
+  <style>
+    .hero{
+      background:{{ (t.hero_gradient or 'linear-gradient(135deg,#e0f2fe 0%,#ffffff 54%,#cffafe 100%)')|safe }};
+    }
+  </style>
+  {% endif %}
+
+  <!-- Paystack Inline -->
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <script>
+    window.PAYSTACK_PUBLIC_KEY = "{{ (paystack_pk or '')|e }}";
+    if(!window.PAYSTACK_PUBLIC_KEY){
+      window.PAYSTACK_PUBLIC_KEY = "";
+    }
+  </script>
+</head>
+
+<body
+  data-auth="{{ '1' if session and session.get('user_id') else '0' }}"
+  data-slug="{{ store.slug }}"
+  data-wa-digits="{{ whatsapp_number_digits or '' }}"
+  data-layout="{{ store.layout or 'grid-2' }}"
+>
+
+  <!-- NAV -->
+  <nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container container-wide">
+      <a class="brand-wrap" href="#">
+        <img class="brand-logo"
+             src="{{ store.logo_url or url_for('brand_images', filename='logo_for_white_bg.png') }}"
+             alt="{{ store.name }} logo" loading="eager" fetchpriority="high">
+        <div class="min-w-0">
+          <div class="brand-text">{{ store.name }}</div>
+          <div class="brand-sub">Secure instant ordering</div>
+        </div>
+      </a>
+
+      <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div id="nav" class="collapse navbar-collapse">
+        <ul class="navbar-nav ms-auto align-items-lg-center">
+          <li class="nav-item"><a class="nav-link" href="#main"><i class="bi bi-grid-3x3-gap me-1"></i> Browse</a></li>
+          {% if whatsapp_number_digits %}
+          <li class="nav-item"><a class="nav-link" href="https://wa.me/{{ whatsapp_number_digits }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp me-1"></i> WhatsApp</a></li>
+          {% endif %}
+
+          {% if request.args.get('preview') and session and session.get('user_id') and (store.owner_id|string == session.get('user_id')) %}
+          <li class="nav-item">
+            <span class="nav-link"><i class="bi bi-eye"></i> Preview</span>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-inner container container-wide">
+      <div class="hero-shell">
+        <div class="hero-grid">
+          <div>
+            <div class="hero-kicker">
+              <span class="hero-kicker-dot"></span>
+              <span>{{ (t.name or 'store theme')|replace('-', ' ')|title }}</span>
+            </div>
+
+            <h1 class="mb-2">{{ store.name }}</h1>
+
+            <div class="hero-theme-line">
+              {{ (store.hero.subtitle if store.hero and store.hero.subtitle else 'Simple, polished ordering in one branded storefront.') }}
+            </div>
+          </div>
+
+          <div class="hero-cta">
+            <a href="#main" class="btn btn-darkish btn-pill">
+              <i class="bi bi-grid-3x3-gap me-1"></i> Browse Store
+            </a>
+
+            {% if whatsapp_number_digits %}
+            <a href="https://wa.me/{{ whatsapp_number_digits }}?text={{ ('Hello ' ~ store.name ~ ', I want to order.')|urlencode }}"
+               class="btn btn-primary btn-pill" target="_blank" rel="noopener">
+              <i class="bi bi-whatsapp me-1"></i> Contact
+            </a>
+            {% endif %}
+
+            <div class="hero-status">
+              <span class="hero-status-dot"></span>
+              <span>Organized offers, products, and fast checkout.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN -->
+  <section id="main" class="services-section">
+    <div class="container container-wide">
+
+      <!-- Tabs -->
+      <div class="tabs-wrap mb-4 reveal">
+        <div class="tabs-card">
+          <div class="d-flex flex-column flex-md-row gap-2 justify-content-between align-items-md-center">
+            <div class="browse-copy">
+              <div class="section-title mb-1">Browse</div>
+              <div class="section-sub">Move between services and products in one clean catalog.</div>
+            </div>
+
+            <ul class="nav nav-pills" id="storeTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-services" data-bs-toggle="pill"
+                        data-bs-target="#pane-services" type="button" role="tab" aria-controls="pane-services" aria-selected="true">
+                  <i class="bi bi-lightning-charge me-1"></i> Services
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-products" data-bs-toggle="pill"
+                        data-bs-target="#pane-products" type="button" role="tab" aria-controls="pane-products" aria-selected="false">
+                  <i class="bi bi-bag-check me-1"></i> Products
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="storeTabContent">
+
+        <!-- ===================== SERVICES PANE ===================== -->
+        <div class="tab-pane fade show active" id="pane-services" role="tabpanel" aria-labelledby="tab-services" tabindex="0">
+
+          {% macro service_card(svc) -%}
+            {% set can_order = svc.can_order %}
+            {% set reason = svc.disabled_reason %}
+            {% set svc_name_l = (svc.name or '')|lower %}
+            {% set svc_cat_l = ((svc.service_category or '') ~ ' ' ~ (svc.category or ''))|lower %}
+            {% set is_hot = 'express' in svc_cat_l or 'mtn' in svc_name_l %}
+            {% set is_new = 'mashup' in svc_name_l %}
+            <div class="card service-card h-100 reveal">
+              <div class="thumb thumb-service">
+                {% if svc.image_url %}
+                  <img src="{{ svc.image_url }}" alt="{{ svc.name }}" loading="lazy">
+                {% else %}
+                  <img src="https://via.placeholder.com/800x450?text={{ svc.name | urlencode }}" alt="{{ svc.name }}" loading="lazy">
+                {% endif %}
+                <div class="card-badges">
+                  {% if is_hot %}<span class="pro-badge pro-badge-hot"><i class="bi bi-fire"></i>Hot</span>{% endif %}
+                  {% if is_new %}<span class="pro-badge pro-badge-new"><i class="bi bi-stars"></i>New</span>{% endif %}
+                </div>
+              </div>
+
+              <div class="service-body">
+                <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                  <div class="me-2">
+                    <h3 class="service-title m-0">{{ svc.name }}</h3>
+                    <div class="service-meta">{{ (svc.service_category or 'Service') | title }}</div>
+                  </div>
+
+                  {% if not can_order %}
+                    <span class="badge-dangerish">
+                      <i class="bi bi-exclamation-triangle-fill"></i>
+                      <span class="text-truncate" style="max-width: 220px;">{{ reason or 'Unavailable' }}</span>
+                    </span>
+                  {% else %}
+                    <span class="badge-soft">Available</span>
+                  {% endif %}
+                </div>
+
+                {% set visible_offers = (svc.offers or [])[:3] %}
+                {% if visible_offers %}
+                  <ul class="small text-muted mb-2 ps-3">
+                    {% for o in visible_offers %}
+                      <li data-offer-preview="1">
+                        {{ o.value_text or '-' }} - <strong>GHS {{ '%.2f'|format(o.total or 0) }}</strong>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+
+                <div class="mt-auto">
+                  <button class="btn btn-primary w-100 select-btn mt-1"
+                    data-service='{{ {"_id_str":svc._id_str,"name":svc.name,"offers":svc.offers or []} | tojson }}'
+                    data-can="{{ 1 if can_order else 0 }}"
+                    data-reason="{{ reason or '' }}">
+                    <i class="bi bi-lightning-charge me-1"></i> Buy
+                  </button>
+                  <div class="quick-form mt-2" aria-hidden="true"></div>
+                </div>
+              </div>
+            </div>
+          {%- endmacro %}
+
+          <div class="services-layout">
+            <div>
+              <div class="services-grid">
+                {% if not services %}
+                  <div class="text-center text-muted">No services available.</div>
+                {% else %}
+                  {% for svc in services %}
+                    <div class="service-col">
+                      {{ service_card(svc) }}
+                    </div>
+                  {% endfor %}
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- right rail -->
+            <aside class="rail d-none d-lg-block reveal" aria-label="Products you may like">
+              <div class="rail-head">
+                <p class="rail-title mb-0">Products you may like</p>
+                <p class="rail-sub">Random picks while you buy data.</p>
+              </div>
+              <div class="rail-body" id="railReco">
+                <div class="text-muted small">Loading...</div>
+              </div>
+              <div class="p-3 pt-0">
+                <button class="btn btn-soft w-100" id="btnGoProducts" type="button">
+                  <i class="bi bi-bag me-1"></i> View all products
+                </button>
+              </div>
+            </aside>
+          </div>
+
+        </div>
+
+        <!-- ===================== PRODUCTS PANE ===================== -->
+        <div class="tab-pane fade" id="pane-products" role="tabpanel" aria-labelledby="tab-products" tabindex="0">
+
+          {% macro product_card(p) -%}
+            {% set p_name = (p.name or p.title or 'Product') %}
+            {% set p_price = (p.price or p.amount or 0) %}
+            {% set p_desc = (p.description or p.desc or '') %}
+            {% set p_img = (p.image_url or p.image or p.photo_url or p.photo or '') %}
+            {% set wa_ok = (whatsapp_number_digits or '')|length > 0 %}
+            {% set msg = ("Hello " ~ store.name ~ ", I want to order: " ~ p_name ~ " | Price: GHS " ~ ('%.2f'|format(p_price|float))) %}
+            {% set is_new = loop.index <= 2 if loop is defined else true %}
+
+            <div class="card service-card h-100 reveal">
+              <div class="thumb thumb-product">
+                {% if p_img %}
+                  <img src="{{ p_img }}" alt="{{ p_name }}" loading="lazy">
+                {% else %}
+                  <img src="https://via.placeholder.com/800x450?text={{ p_name | urlencode }}" alt="{{ p_name }}" loading="lazy">
+                {% endif %}
+                <div class="card-badges">
+                  <span class="pro-badge pro-badge-hot"><i class="bi bi-fire"></i>Hot</span>
+                  {% if is_new %}<span class="pro-badge pro-badge-new"><i class="bi bi-stars"></i>New</span>{% endif %}
+                </div>
+              </div>
+
+              <div class="service-body">
+                <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                  <div class="me-2 min-w-0">
+                    <h3 class="service-title m-0 text-truncate">{{ p_name }}</h3>
+                    <div class="muted-line">Order fast on WhatsApp</div>
+                  </div>
+                  <div class="price-tag">GHS {{ '%.2f'|format(p_price|float) }}</div>
+                </div>
+
+                {% if p_desc %}
+                  <div class="small text-muted mb-2" style="line-height:1.45">
+                    {{ p_desc }}
+                  </div>
+                {% else %}
+                  <div class="small text-muted mb-2" style="line-height:1.45">
+                    Quality product · Ready for delivery/pickup.
+                  </div>
+                {% endif %}
+
+                <div class="mt-auto d-flex gap-2 flex-wrap">
+                  {% if wa_ok %}
+                    <a class="btn btn-success w-100"
+                       href="https://wa.me/{{ whatsapp_number_digits }}?text={{ msg|urlencode }}"
+                       target="_blank" rel="noopener">
+                      <i class="bi bi-whatsapp me-1"></i> Order on WhatsApp
+                    </a>
+                  {% else %}
+                    <button class="btn btn-outline-secondary w-100" disabled>
+                      <i class="bi bi-whatsapp me-1"></i> WhatsApp not set
+                    </button>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {%- endmacro %}
+
+          {% if not products %}
+            <div class="text-center text-muted reveal">No products added yet.</div>
+          {% else %}
+            <!-- 2 per row on all screen sizes -->
+            <div class="products-grid">
+              {% for p in products %}
+                <div class="pcol">
+                  {{ product_card(p) }}
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAB CART -->
+  <button type="button" class="fab-cart" id="fabCart" data-bs-toggle="modal" data-bs-target="#cartModal" aria-label="Cart">
+    <i class="bi bi-cart3"></i>
+    <span class="badge" id="cartCount">0</span>
+  </button>
+
+  <!-- CART MODAL -->
+  <div class="modal fade" id="cartModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ store.name }} - Cart</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <div id="cartEmpty" class="text-muted">Your cart is empty.</div>
+
+          <div id="orderStatusBox" class="alert alert-success d-none">
+            <div class="fw-semibold">Order received.</div>
+            <div class="small">Order ID: <span id="orderStatusText"></span></div>
+            <a id="orderStatusLink" class="small d-none" href="#">Track order status</a>
+          </div>
+
+          <div id="cartWrap" class="d-none">
+            <div class="table-responsive mb-2">
+              <table class="table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Service</th>
+                    <th>Phone</th>
+                    <th>Offer</th>
+                    <th class="text-end">Pay (GHS)</th>
+                    <th style="width:80px"></th>
+                  </tr>
+                </thead>
+                <tbody id="cartBody"></tbody>
+              </table>
+            </div>
+
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-2 gap-2">
+              <div class="status-note" id="paymentNote" aria-live="polite">
+                Payment required before processing. Click "Pay Now" (includes 2% fee).
+              </div>
+
+              <div class="text-end">
+                <div class="fw-bold">Cart Total: GHS <span id="cartTotal">0.00</span></div>
+                <div class="fw-bold">Paystack Total (incl. 2% fee): GHS <span id="paystackTotal">0.00</span></div>
+                <div class="small text-muted mt-1" id="feeNote">
+                  A 2% Paystack fee is added at checkout. We'll still process your exact order total automatically.
+                </div>
+              </div>
+            </div>
+
+            <div class="text-end d-flex flex-wrap gap-2 justify-content-end">
+              <button class="btn btn-outline-danger" id="btnClear">Clear</button>
+
+              <button class="btn btn-primary" id="btnPay">
+                <span class="btn-text">Pay Now</span>
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+              </button>
+
+              <button class="btn btn-success" id="btnProcess" disabled>
+                <span class="btn-text">Process Order</span>
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer small text-muted">
+          If a service shows "Unavailable", you can't add it to the cart.
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal fade" id="dupCartModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Duplicate Item</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="dupCartModalMsg">This number is already in your cart for the same bundle. Add anyway?</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="dupCartModalConfirm">Add Anyway</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recommendations modal (opens only when user clicks Buy) -->
+  <div class="modal fade" id="recoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div>
+            <h5 class="modal-title mb-0">Products you may like</h5>
+            <div class="small text-muted">Random picks from this store - you can close anytime.</div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <div id="recoEmpty" class="text-muted d-none">No products yet.</div>
+          <div class="reco-grid" id="recoGrid"></div>
+        </div>
+
+        <div class="modal-footer d-flex justify-content-between align-items-center">
+          <div class="small text-muted">Tip: images are set to "contain" so they show fully (no cropping).</div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-soft" data-bs-dismiss="modal">
+              <i class="bi bi-x-lg me-1"></i> Close
+            </button>
+            <button type="button" class="btn btn-primary" id="recoViewAll">
+              <i class="bi bi-bag me-1"></i> View all products
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- ===================== CHECK ORDER STATUS (ADD THIS BLOCK) ===================== -->
+<!-- Place this inside your Store Page HTML (e.g. inside #main container, under the tabs card or above the services grid) -->
+
+<style>
+  /* ---- Check Status Card (scoped) ---- */
+  .check-status-card{
+    background: rgba(255,255,255,.86);
+    backdrop-filter: saturate(160%) blur(10px);
+    border: 1px solid rgba(15,23,42,.10);
+    border-radius: 18px;
+    box-shadow: 0 18px 45px rgba(15,23,42,.08);
+    overflow: hidden;
+  }
+  .check-status-head{
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    background: rgba(255,255,255,.65);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 12px;
+  }
+  .check-status-title{
+    font-weight: 950;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-size: .78rem;
+    color: #475569;
+    margin:0;
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+    white-space:nowrap;
+  }
+  .check-status-sub{
+    margin: 4px 0 0;
+    color: #64748b;
+    font-size: .88rem;
+    line-height: 1.35;
+  }
+  .check-status-body{
+    padding: 14px 16px 16px;
+  }
+  .check-status-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .check-status-btn{
+    border-radius: 999px;
+    font-weight: 950;
+    padding: .72rem 1.15rem;
+    border: 1px solid rgba(2,132,199,.28);
+    background: linear-gradient(135deg, var(--primary, #0EA5E9), #0284c7);
+    color:#fff;
+    box-shadow: 0 16px 34px rgba(14,165,233,.20);
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:.55rem;
+    transition: transform .12s ease, filter .12s ease;
+  }
+  .check-status-btn:hover{ transform: translateY(-1px); filter: brightness(.98); color:#fff; }
+
+  .check-status-note{
+    font-size: .86rem;
+    color: #64748b;
+    margin:0;
+    display:flex;
+    align-items:center;
+    gap:.45rem;
+  }
+
+  /* Nice spacing between this card and content around it */
+  .check-status-wrap{ margin: 14px 0 18px; }
+
+  @media (max-width:576px){
+    .check-status-actions{ justify-content: flex-start; }
+    .check-status-btn{ width:100%; justify-content:center; }
+    .check-status-note{ width:100%; }
+  }
+</style>
+
+<div class="check-status-wrap reveal">
+  <div class="check-status-card">
+    <div class="check-status-head">
+      <div>
+        <p class="check-status-title">
+          <i class="bi bi-receipt-cutoff"></i>
+          Check Order Status
+        </p>
+        <p class="check-status-sub">
+          Track your order progress after payment.
+        </p>
+      </div>
+
+      <span class="badge-soft d-none d-md-inline-flex">
+        <i class="bi bi-shield-check"></i> Secure
+      </span>
+    </div>
+
+    <div class="check-status-body">
+      <div class="check-status-actions">
+        <!-- This is your link -->
+        <a class="check-status-btn" href="/check-status">
+          <i class="bi bi-search"></i>
+          Check Status
+        </a>
+
+        <p class="check-status-note">
+          <i class="bi bi-info-circle"></i>
+          Use the same phone number you used during checkout.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+  <!-- ===================== /CHECK ORDER STATUS BLOCK ===================== -->
+
+  <!-- Ported Number Modal -->
+  <div class="modal fade ported-modal" id="portedModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="d-flex align-items-center gap-2">
+            <span class="warn-icon"><i class="bi bi-exclamation-triangle-fill"></i></span>
+            <h5 class="modal-title mb-0">Ported Number Detected</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="portedModalMsg" class="fw-semibold"></div>
+          <div id="portedModalPrefixes" class="prefix-badges"></div>
+          <div class="text-muted small mt-2">
+            If you are sure this number was ported, confirm to continue.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" id="portedCancelBtn">No, I'll Correct It</button>
+          <button type="button" class="btn btn-warning text-dark" id="portedConfirmBtn">Yes, It's Ported</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer mt-4 py-3">
+    <div class="container container-wide">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+        <div>
+          &copy; <span id="y"></span> {{ store.name }}.
+          <span class="ms-2 text-muted">All rights reserved.</span>
+        </div>
+
+        <div class="footer-badges">
+          {% if whatsapp_number_digits %}
+            <a class="mini-pill" href="{{ whatsapp_number_link }}" target="_blank" rel="noopener">
+              <i class="bi bi-whatsapp"></i> WhatsApp
+            </a>
+          {% endif %}
+
+          {% if whatsapp_group_link %}
+            <a class="mini-pill" href="{{ whatsapp_group_link }}" target="_blank" rel="noopener">
+              <i class="bi bi-people-fill"></i> WhatsApp Group
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast -->
+  <div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="appToast" class="toast toast-dark border-0">
+      <div class="d-flex">
+        <div class="toast-body" id="toastBody">Done</div>
+        <button class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JSON data (no defaults) -->
+  <script type="application/json" id="productsJson">{{ (products or []) | tojson }}</script>
+  <script type="application/json" id="storeNameJson">{{ (store.name or "Store") | tojson }}</script>
+  <script type="application/json" id="storeWaJson">{{ (whatsapp_number_digits or "") | tojson }}</script>
+
+  <!-- Paystack payer identity: must come from DB (no fallback values) -->
+  <script type="application/json" id="psEmailJson">{{ (paystack_payer_email or "") | tojson }}</script>
+  <script type="application/json" id="psFirstJson">{{ (paystack_payer_first or "") | tojson }}</script>
+  <script type="application/json" id="psLastJson">{{ (paystack_payer_last or "") | tojson }}</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  {{- "" -}}
+  <script>
+  (function () {
+    // ================== helpers ==================
+    function readJsonScript(id, fallback) {
+      try {
+        const el = document.getElementById(id);
+        if (!el) return fallback;
+        const txt = (el.textContent || "").trim();
+        if (!txt) return fallback;
+        return JSON.parse(txt);
+      } catch (_) {
+        return fallback;
+      }
+    }
+
+    function money(n) { return Number(n || 0).toFixed(2); }
+    function money2(n) { return Number(n || 0).toFixed(2); }
+    function pesewas(n) { return Math.round(Number(n || 0) * 100); }
+
+      function normalizePhone(s) {
+        let d = String(s || "").replace(/\D+/g, "");
+        if (d.startsWith("233")) d = "0" + d.slice(3);
+        if (d.length > 10) d = d.slice(-10);
+        return d;
+      }
+      async function ensurePhoneEligibleForOrder(phone){
+        try {
+          const res = await fetch("/api/phone-numbers/eligibility?phone=" + encodeURIComponent(phone));
+          const data = await res.json();
+          if (res.ok && data && data.allowed) return true;
+          tell((data && data.message) || "Can't Place Order now, Please Contact Admin");
+          return false;
+        } catch (e) {
+          return true;
+        }
+      }
+
+      // ---------- Ported number helpers ----------
+      function getPrefix(phoneDigits){ return phoneDigits && phoneDigits.length >= 3 ? phoneDigits.slice(0,3) : ""; }
+      function networkFromService(svc){
+        const joined = [svc?.service_network, svc?.network, svc?.serviceName, svc?.name].filter(Boolean).join(" ").toLowerCase();
+        if (joined.includes("mtn")) return "MTN";
+        if (joined.includes("telecel") || joined.includes("vodafone")) return "TELECEL";
+        if (joined.includes("airteltigo") || joined.includes("tigo") || joined.includes("ishare") || joined.startsWith("at")) return "TIGO";
+        return "";
+      }
+      const PREFIX_MAP = {
+        MTN: ["025","024","059","055","054","053"],
+        TELECEL: ["020","050"],
+        TIGO: ["057","056","027","026"]
+      };
+      function networkFromPrefix(prefix){
+        for (const k in PREFIX_MAP){
+          if (PREFIX_MAP[k].includes(prefix)) return k;
+        }
+        return "";
+      }
+      function needsPortedConfirm(expected, actual){ return expected && actual && expected !== actual; }
+      function portedKey(serviceKey, phoneDigits){ return "ported_ok:" + (serviceKey || "") + ":" + phoneDigits; }
+      function isPortedConfirmed(serviceKey, phoneDigits){
+        try { return sessionStorage.getItem(portedKey(serviceKey, phoneDigits)) === "1"; } catch(e){ return false; }
+      }
+      function setPortedConfirmed(serviceKey, phoneDigits){
+        try { sessionStorage.setItem(portedKey(serviceKey, phoneDigits), "1"); } catch(e){}
+      }
+      function applyPortedFields(line, expected, actual, prefix){
+        line.ported_confirmed = true;
+        line.ported_expected_network = expected;
+        line.ported_detected_network = actual;
+        line.ported_prefix = prefix;
+      }
+      function showDuplicateModal(message){
+      return new Promise(function(resolve){
+        var modalEl = document.getElementById("dupCartModal");
+        if (!modalEl || !window.bootstrap){ resolve(!!confirm(message || "This number is already in your cart for the same bundle. Add anyway?")); return; }
+        var msgEl = document.getElementById("dupCartModalMsg");
+        var yesBtn = document.getElementById("dupCartModalConfirm");
+        if (msgEl) msgEl.textContent = message || "This number is already in your cart for the same bundle. Add anyway?";
+        var inst = bootstrap.Modal.getOrCreateInstance(modalEl);
+        var done = false;
+        function cleanup(res){
+          if (done) return;
+          done = true;
+          modalEl.removeEventListener("hidden.bs.modal", onHidden);
+          if (yesBtn) yesBtn.removeEventListener("click", onYes);
+          resolve(res);
+        }
+        function onHidden(){ cleanup(false); }
+        function onYes(){ inst.hide(); cleanup(true); }
+        if (yesBtn) yesBtn.addEventListener("click", onYes);
+        modalEl.addEventListener("hidden.bs.modal", onHidden);
+        inst.show();
+      });
+    }
+
+    function showPortedModal(opts){
+        return new Promise((resolve) => {
+          const modalEl = document.getElementById("portedModal");
+          if (!modalEl || !window.bootstrap) { resolve(true); return; }
+          const msgEl = document.getElementById("portedModalMsg");
+          const badgesEl = document.getElementById("portedModalPrefixes");
+          const btnCancel = document.getElementById("portedCancelBtn");
+          const btnConfirm = document.getElementById("portedConfirmBtn");
+          if (msgEl) msgEl.textContent = opts.message || "Ported number detected.";
+          if (badgesEl) {
+            badgesEl.innerHTML = "";
+            badgesEl.insertAdjacentHTML("beforeend", `<span class="badge text-bg-warning">Expected: ${opts.expected}</span>`);
+            badgesEl.insertAdjacentHTML("beforeend", `<span class="badge text-bg-secondary">Detected: ${opts.actual} (${opts.prefix})</span>`);
+          }
+          const inst = bootstrap.Modal.getOrCreateInstance(modalEl);
+          let done = false;
+          function cleanup(ok){
+            if (done) return;
+            done = true;
+            modalEl.removeEventListener("hidden.bs.modal", onHidden);
+            btnCancel?.removeEventListener("click", onCancel);
+            btnConfirm?.removeEventListener("click", onConfirm);
+            resolve(ok);
+          }
+          function onHidden(){ cleanup(false); }
+          function onCancel(){ inst.hide(); cleanup(false); }
+          function onConfirm(){ inst.hide(); cleanup(true); }
+          modalEl.addEventListener("hidden.bs.modal", onHidden);
+          btnCancel?.addEventListener("click", onCancel);
+          btnConfirm?.addEventListener("click", onConfirm);
+          inst.show();
+        });
+      }
+      async function ensurePortedConfirmedForLine(line, focusEl){
+        const phoneDigits = normalizePhone(line.phone || "");
+        const prefix = getPrefix(phoneDigits);
+        const expected = networkFromService(line);
+        const actual = networkFromPrefix(prefix);
+        if (!needsPortedConfirm(expected, actual)) return true;
+        const key = line.serviceId || line.serviceName || expected;
+        if (isPortedConfirmed(key, phoneDigits)) {
+          applyPortedFields(line, expected, actual, prefix);
+          return true;
+        }
+        const ok = await showPortedModal({
+          expected, actual, prefix,
+          message: "The phone prefix does not match the selected network."
+        });
+        if (ok){
+          setPortedConfirmed(key, phoneDigits);
+          applyPortedFields(line, expected, actual, prefix);
+          return true;
+        }
+        if (focusEl){
+          focusEl.classList.add("is-invalid");
+          focusEl.focus();
+          setTimeout(() => focusEl.classList.remove("is-invalid"), 1200);
+        }
+        return false;
+      }
+      async function ensurePortedConfirmedForCart(lines){
+        const items = Array.isArray(lines) ? lines : [];
+        for (const line of items){
+          const ok = await ensurePortedConfirmedForLine(line);
+          if (!ok) return false;
+        }
+        return true;
+      }
+
+    function setLoading(btn, on) {
+      if (!btn) return;
+      const txt = btn.querySelector(".btn-text");
+      const sp = btn.querySelector(".spinner-border");
+      btn.disabled = !!on;
+      if (on) { if (txt) txt.classList.add("d-none"); if (sp) sp.classList.remove("d-none"); }
+      else { if (txt) txt.classList.remove("d-none"); if (sp) sp.classList.add("d-none"); }
+    }
+
+    // ================== toast + misc UI ==================
+    const toastEl = document.getElementById("appToast");
+    const toast = (toastEl && window.bootstrap) ? new bootstrap.Toast(toastEl, { delay: 2400 }) : null;
+
+    function tell(m) {
+      const body = document.getElementById("toastBody");
+      if (body) body.textContent = m || "Done";
+      if (toast) toast.show();
+      else alert(m || "Done");
+    }
+
+    const yEl = document.getElementById("y");
+    if (yEl) yEl.textContent = new Date().getFullYear();
+
+    // reveal on scroll (safe)
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("in");
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+    } else {
+      document.querySelectorAll(".reveal").forEach((el) => el.classList.add("in"));
+    }
+
+    // hide FAB on Products tab
+    const fab = document.getElementById("fabCart");
+    const tabServices = document.getElementById("tab-services");
+    const tabProducts = document.getElementById("tab-products");
+    function updateFab() {
+      const productsActive = tabProducts && tabProducts.classList.contains("active");
+      if (fab) fab.classList.toggle("hide", !!productsActive);
+    }
+    if (tabServices) tabServices.addEventListener("shown.bs.tab", updateFab);
+    if (tabProducts) tabProducts.addEventListener("shown.bs.tab", updateFab);
+    updateFab();
+
+    // ================== data from backend ==================
+    const PRODUCTS = readJsonScript("productsJson", []);
+    const STORE_NAME = readJsonScript("storeNameJson", "Store");
+    const WA = String(readJsonScript("storeWaJson", "") || "").trim();
+
+    // No defaults: must come from DB (backend scripts)
+    const PS_OWNER_EMAIL = String(readJsonScript("psEmailJson", "") || "").trim();
+    const PS_FIRST = String(readJsonScript("psFirstJson", "") || "").trim();
+    const PS_LAST  = String(readJsonScript("psLastJson", "") || "").trim();
+
+    function normalizePhoneForEmail(raw) {
+      const digits = String(raw || "").replace(/\D+/g, "");
+      if (!digits) return "";
+      if (digits.startsWith("233") && digits.length >= 12) return "0" + digits.slice(-9);
+      if (digits.length === 9) return "0" + digits;
+      if (digits.length === 10 && digits.startsWith("0")) return digits;
+      return digits;
+    }
+
+    function buildDummyPaystackEmail(phone) {
+      const p = normalizePhoneForEmail(phone);
+      return p ? `deikoj17+${p}@gmail.com` : "deikoj17@gmail.com";
+    }
+
+    function getPaystackEmailFromCart() {
+      try {
+        const first = (cart && Array.isArray(cart._data)) ? cart._data.find(it => it && it.phone) : null;
+        return buildDummyPaystackEmail(first ? first.phone : "");
+      } catch (_) {
+        return "";
+      }
+    }
+
+    function ensurePaystackIdentityOrExplain() {
+      const email = getPaystackEmailFromCart();
+      if (!email) {
+        tell("Payment needs a valid phone number. Add an item with a correct phone and try again.");
+        return false;
+      }
+      // first/last can be empty; Paystack accepts email only, but we pass what we have.
+      return true;
+    }
+
+    function normalizeProduct(p) {
+      const name = (p && (p.name || p.title)) || "Product";
+      const price = Number(p && (p.price ?? p.amount ?? 0)) || 0;
+      const desc = (p && (p.description || p.desc)) || "";
+      const img = (p && (p.image_url || p.image || p.photo_url || p.photo)) || "";
+      return { name, price, desc, img };
+    }
+
+    function shuffle(arr) {
+      const a = (arr || []).slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+      }
+      return a;
+    }
+
+    // go to products tab
+    function goProductsTab() {
+      try {
+        const trigger = document.getElementById("tab-products");
+        if (trigger) new bootstrap.Tab(trigger).show();
+        const pane = document.getElementById("pane-products");
+        if (pane) pane.scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch (_) { }
+    }
+
+    const btnGoProducts = document.getElementById("btnGoProducts");
+    if (btnGoProducts) btnGoProducts.addEventListener("click", goProductsTab);
+
+    const recoViewAll = document.getElementById("recoViewAll");
+    if (recoViewAll) {
+      recoViewAll.addEventListener("click", () => {
+        const modalEl = document.getElementById("recoModal");
+        const inst = modalEl ? bootstrap.Modal.getInstance(modalEl) : null;
+        if (inst) inst.hide();
+        setTimeout(goProductsTab, 160);
+      });
+    }
+
+    function buildRecoTile(p) {
+      const safeName = String(p.name || "Product");
+      const img = p.img || ("https://via.placeholder.com/800x450?text=" + encodeURIComponent(safeName));
+      const msg = "Hello " + STORE_NAME + ", I want to order: " + safeName + " | Price: GHS " + money(p.price);
+      const waLink = WA ? ("https://wa.me/" + WA + "?text=" + encodeURIComponent(msg)) : "";
+
+      return (
+        '<div class="reco-item">' +
+        '  <div class="reco-tile h-100">' +
+        '    <div class="reco-thumb"><img src="' + img + '" alt="' + safeName.replace(/"/g, "&quot;") + '" loading="lazy"></div>' +
+        '    <div class="reco-body">' +
+        '      <p class="reco-name">' + safeName + "</p>" +
+        '      <p class="reco-meta">GHS <strong>' + money(p.price) + "</strong></p>" +
+        '      <div class="reco-actions">' +
+        (WA
+          ? ('<a class="btn btn-success flex-grow-1" href="' + waLink + '" target="_blank" rel="noopener"><i class="bi bi-whatsapp me-1"></i> WhatsApp</a>')
+          : ('<button class="btn btn-outline-secondary flex-grow-1" disabled><i class="bi bi-whatsapp me-1"></i> WhatsApp not set</button>')
+        ) +
+        '        <button class="btn btn-soft" type="button" data-reco-view="1" title="View all products"><i class="bi bi-bag"></i></button>' +
+        "      </div>" +
+        "    </div>" +
+        "  </div>" +
+        "</div>"
+      );
+    }
+
+    function renderRailAndModalProducts() {
+      const rail = document.getElementById("railReco");
+      const grid = document.getElementById("recoGrid");
+      const empty = document.getElementById("recoEmpty");
+
+      if (!PRODUCTS || !PRODUCTS.length) {
+        if (rail) rail.innerHTML = '<div class="text-muted small">No products yet.</div>';
+        if (grid) grid.innerHTML = "";
+        if (empty) empty.classList.remove("d-none");
+        return;
+      }
+
+      const picks = shuffle(PRODUCTS).slice(0, 6).map(normalizeProduct);
+
+      if (rail) {
+        rail.innerHTML = picks.slice(0, 4).map(p => {
+          const img = p.img || ("https://via.placeholder.com/800x450?text=" + encodeURIComponent(p.name));
+          return (
+            '<a class="mini-card" href="javascript:void(0)" data-rail-go="1" title="View all products">' +
+            '  <div class="mini-img"><img src="' + img + '" alt="' + p.name.replace(/"/g, "&quot;") + '" loading="lazy"></div>' +
+            '  <div class="mini-info">' +
+            '    <p class="mini-name">' + p.name + "</p>" +
+            '    <div class="mini-price">GHS ' + money(p.price) + "</div>" +
+            '    <div class="mini-note">Tap to see products</div>' +
+            "  </div>" +
+            "</a>"
+          );
+        }).join("");
+        rail.querySelectorAll('[data-rail-go="1"]').forEach(a => a.addEventListener("click", goProductsTab));
+      }
+
+      if (grid) {
+        grid.innerHTML = picks.map(buildRecoTile).join("");
+        grid.querySelectorAll('[data-reco-view="1"]').forEach(b => b.addEventListener("click", goProductsTab));
+      }
+      if (empty) empty.classList.add("d-none");
+    }
+    renderRailAndModalProducts();
+
+    // Show recommendation modal only when user clicks "Buy"
+    const RECO_KEY = "store_reco_seen_" + (document.body.getAttribute("data-slug") || "");
+    function shouldShowReco() {
+      try {
+        const last = Number(localStorage.getItem(RECO_KEY) || "0");
+        return (Date.now() - last) > (10 * 60 * 1000);
+      } catch (_) { return true; }
+    }
+    function markRecoSeen() { try { localStorage.setItem(RECO_KEY, String(Date.now())); } catch (_) { } }
+    function openRecoModal() {
+      if (!PRODUCTS || !PRODUCTS.length) return;
+      if (!shouldShowReco()) return;
+      renderRailAndModalProducts();
+      markRecoSeen();
+      const modalEl = document.getElementById("recoModal");
+      if (!modalEl) return;
+      const m = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true, focus: true });
+      m.show();
+    }
+
+    // ================== EXISTING CART + PAY LOGIC ==================
+    const SLUG = document.body.getAttribute("data-slug") || "";
+    const CART_KEY = "store_cart_" + SLUG;
+    const PAY_CONFIRMED_KEY = "store_ps_confirmed_" + SLUG;
+
+    function _formatGb(n) {
+      if (n == null || isNaN(n)) return "-";
+      const r = Math.round(n);
+      return (Math.abs(n - r) < 1e-9 ? String(r) : String(parseFloat(n.toFixed(2)).toString())) + " GB";
+    }
+    function _extractGb(raw) {
+      if (!raw) return null;
+      const s = String(raw).trim();
+      var m = s.match(/^\s*([0-9]+(?:\.[0-9]+)?)\s*gb\s*$/i);
+      if (m) return parseFloat(m[1]);
+      m = s.match(/^\s*([0-9]+(?:\.[0-9]+)?)\s*mb\s*$/i);
+      if (m) return parseFloat(m[1]) / 1000;
+
+      if (s.startsWith("{") && s.endsWith("}")) {
+        try {
+          const j = JSON.parse(
+            s.replace(/'/g, '"')
+              .replace(/\bNone\b/g, "null")
+              .replace(/\bTrue\b/g, "true")
+              .replace(/\bFalse\b/g, "false")
+          );
+          if (j && typeof j === "object") {
+            if (j.gb != null && !isNaN(parseFloat(j.gb))) return parseFloat(j.gb);
+            if (j.offer != null && !isNaN(parseFloat(j.offer))) return parseFloat(j.offer) / 1000;
+            if (j.volume != null && !isNaN(parseFloat(j.volume))) return parseFloat(j.volume) / 1000;
+          }
+        } catch (_) { }
+      }
+      return null;
+    }
+
+    function normalizeServerPreviewOfferLabels() {
+      var items = document.querySelectorAll('li[data-offer-preview="1"]');
+      for (var i = 0; i < items.length; i++) {
+        var li = items[i];
+        var strong = li.querySelector("strong");
+        var priceHTML = strong ? strong.outerHTML : "";
+        var clone = li.cloneNode(true);
+        var st = clone.querySelector("strong"); if (st) st.remove();
+        var leftText = clone.textContent.split("-")[0].trim();
+        var gb = _extractGb(leftText);
+        var label = gb != null ? _formatGb(gb) : (leftText || "-");
+        li.innerHTML = label + " - " + priceHTML;
+      }
+    }
+    normalizeServerPreviewOfferLabels();
+
+    function parseMaybeObject(v) {
+      if (v && typeof v === "object") return v;
+      if (typeof v !== "string") return null;
+      const s = v.trim();
+      if (!(s.startsWith("{") && s.endsWith("}"))) return null;
+      try { return JSON.parse(s); } catch (_) { }
+      try {
+        const fixed = s.replace(/'/g, '"')
+          .replace(/\bNone\b/g, "null")
+          .replace(/\bTrue\b/g, "true")
+          .replace(/\bFalse\b/g, "false");
+        return JSON.parse(fixed);
+      } catch (_) { return null; }
+    }
+
+    function gbLabelFromOffer(o, svcName) {
+      const svc = (svcName || "").toLowerCase();
+      if (svc === "afa talktime") {
+        let v = o ? o.value : undefined;
+        const maybeObj = parseMaybeObject(v);
+        if (maybeObj) v = maybeObj;
+        if (v && typeof v === "object" && v.volume != null) {
+          const mins = Number(v.volume);
+          if (!isNaN(mins)) return Math.round(mins) + " mins";
+        }
+        if (typeof v === "string") {
+          const m = v.match(/(\d+(?:\.\d+)?)/);
+          if (m) return Math.round(parseFloat(m[1])) + " mins";
+        }
+      }
+      if (o && typeof o.value_text === "string" && o.value_text.trim()) {
+        const vt = o.value_text.trim();
+        if (/min/i.test(vt)) return vt;
+        const mbMatch = vt.match(/^\s*([0-9]+(?:\.[0-9]+)?)\s*mb\s*$/i);
+        if (mbMatch) return _formatGb(parseFloat(mbMatch[1]) / 1000);
+      }
+      let v = o ? o.value : undefined;
+      const maybeObj = parseMaybeObject(v);
+      if (maybeObj) v = maybeObj;
+
+      let gb = null;
+      if (v && typeof v === "object") {
+        if (v.gb != null && !isNaN(parseFloat(v.gb))) gb = parseFloat(v.gb);
+        else if (v.offer != null && !isNaN(parseFloat(v.offer))) gb = parseFloat(v.offer) / 1000;
+        else if (v.volume != null && !isNaN(parseFloat(v.volume))) gb = parseFloat(v.volume) / 1000;
+      }
+      if (gb == null && typeof v === "string") {
+        const g = v.match(/^\s*([0-9]+(?:\.[0-9]+)?)\s*gb\s*$/i); if (g) gb = parseFloat(g[1]);
+        const m = v.match(/^\s*([0-9]+(?:\.[0-9]+)?)\s*mb\s*$/i); if (m) gb = parseFloat(m[1]) / 1000;
+      }
+      if (gb != null) return _formatGb(gb);
+      if (typeof v === "string") return v.replace(/gb/ig, "GB");
+      return "-";
+    }
+
+    const cart = {
+      _data: [],
+      load() { try { this._data = JSON.parse(localStorage.getItem(CART_KEY) || "[]") || []; } catch (e) { this._data = []; } },
+      save() { try { localStorage.setItem(CART_KEY, JSON.stringify(this._data)); } catch (e) { } },
+      key(line){
+        return [line && (line.serviceId || line.service_id || ""), line && (line.phone || ""), line && (line.value || ""), Number(line && line.amount || 0)].join("|");
+      },
+      hasDuplicate(line){
+        const key = this.key(line);
+        for (let i = 0; i < this._data.length; i++) {
+          if (this.key(this._data[i]) === key) return true;
+        }
+        return false;
+      },
+      add(line) {
+        if (line && line.phone) {
+          const p = normalizePhone(line.phone);
+          if (!/^0\d{9}$/.test(p)) {
+            tell("Phone must be 10 digits (e.g. 0530393625)");
+            return;
+          }
+          line.phone = p;
+        }
+        this._data.push(line);
+        this.save();
+        renderCart();
+      },
+      remove(i) { this._data.splice(i, 1); this.save(); renderCart(); },
+      clear() { this._data = []; this.save(); renderCart(); },
+      total() { return this._data.reduce((t, i) => t + Number(i.amount || 0), 0); }
+    };
+
+    function buildForm(uid, svc) {
+      const opts = (svc.offers || []).filter(o => o && o.total != null);
+      let options = '<option value="">Choose offer</option>';
+      for (let i = 0; i < opts.length; i++) {
+        const o = opts[i];
+        const lab = gbLabelFromOffer(o);
+        options += '<option value="' + i + '" data-total="' + (o.total ?? "") + '" data-base="' + (o.amount ?? "") + '">GHS ' + Number(o.total || 0).toFixed(2) + " - " + (lab || "-") + "</option>";
+      }
+      return ""
+        + '<div class="row g-2 align-items-end">'
+        + '  <div class="col-12"><div class="small text-muted">Choose an offer, then enter phone (starts with 0)</div></div>'
+        + '  <div class="col-12 col-lg-6">'
+        + '    <label class="form-label mb-1" for="qf_offer_' + uid + '">Offer</label>'
+        + '    <select class="form-select form-select-lg" id="qf_offer_' + uid + '">' + options + '</select>'
+        + '  </div>'
+        + '  <div class="col-12 col-lg-6">'
+        + '    <label class="form-label mb-1" for="qf_phone_' + uid + '">Phone</label>'
+        + '    <input class="form-control form-control-lg" id="qf_phone_' + uid + '" placeholder="0xxxxxxxxx" inputmode="numeric" maxlength="14">'
+        + '  </div>'
+        + '  <div class="col-12 d-flex gap-2 flex-wrap">'
+        + '    <button class="btn btn-primary" id="qf_add_' + uid + '">'
+        + '      <span class="btn-text">Add to Cart</span>'
+        + '      <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>'
+        + '    </button>'
+        + '    <button class="btn btn-outline-secondary" id="qf_cancel_' + uid + '">Cancel</button>'
+        + '  </div>'
+        + '</div>';
+    }
+
+    document.querySelectorAll(".select-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const can = btn.getAttribute("data-can") === "1";
+        if (!can) { tell(btn.getAttribute("data-reason") || "This service is unavailable."); return; }
+
+        openRecoModal();
+
+        let svc = {};
+        try { svc = JSON.parse(btn.getAttribute("data-service") || "{}"); } catch (e) { }
+
+        svc.offers = (svc.offers || []).map(o => {
+          const amountNum = Number(o.amount);
+          const amount = Number.isFinite(amountNum) ? amountNum : 0;
+          return Object.assign({}, o, { amount: amount, value_text: (o.value_text || gbLabelFromOffer(o, svc.name)) });
+        });
+
+        const card = btn.closest(".service-card");
+        const qf = card ? card.querySelector(".quick-form") : null;
+        if (!qf) return;
+
+        document.querySelectorAll(".quick-form.show").forEach(el => {
+          if (el !== qf) { el.classList.remove("show"); el.innerHTML = ""; el.setAttribute("aria-hidden", "true"); }
+        });
+
+        const uid = String(Date.now()) + Math.floor(Math.random() * 1000);
+        qf.innerHTML = buildForm(uid, svc);
+        qf.classList.add("show"); qf.setAttribute("aria-hidden", "false");
+
+        const offerEl = qf.querySelector("#qf_offer_" + uid);
+        const phoneEl = qf.querySelector("#qf_phone_" + uid);
+        const addBtn = qf.querySelector("#qf_add_" + uid);
+        const cancelBtn = qf.querySelector("#qf_cancel_" + uid);
+
+        if (phoneEl) {
+          phoneEl.addEventListener("input", () => { phoneEl.value = normalizePhone(phoneEl.value); });
+        }
+
+          if (addBtn) {
+            addBtn.addEventListener("click", async () => {
+              const idx = Number(offerEl ? offerEl.value : "");
+              const of = (svc.offers || [])[idx];
+              const phone = normalizePhone(phoneEl ? phoneEl.value : "");
+              if (isNaN(idx) || !of) { tell("Please choose an offer."); if (offerEl) offerEl.focus(); return; }
+              if (!/^0\d{9}$/.test(phone)) { tell("Phone must be 10 digits (e.g. 0530393625)"); if (phoneEl) phoneEl.focus(); return; }
+
+              setLoading(addBtn, true);
+              setTimeout(() => {
+                const line = {
+                  serviceId: svc._id_str,
+                  serviceName: svc.name,
+                  service_network: svc.service_network,
+                  network: svc.network,
+                  phone: phone,
+                  value: of.value_text || "-",
+                  value_obj: of.value || null,
+                  base_amount: Number(of.amount || 0),
+                  amount: Number(of.total || 0)
+                };
+                Promise.resolve(ensurePortedConfirmedForLine(line, phoneEl)).then(async (ok) => {
+                  if (!ok) { setLoading(addBtn, false); return; }
+                  const allowed = await ensurePhoneEligibleForOrder(phone);
+                  if (!allowed) { setLoading(addBtn, false); return; }
+                  if (cart.hasDuplicate(line)) {
+                    const okDup = await showDuplicateModal("This number is already in your cart for the same bundle. Add anyway?");
+                    if (!okDup) { setLoading(addBtn, false); return; }
+                  }
+                  cart.add(line);
+                  setLoading(addBtn, false);
+                  tell("Added to cart");
+                  qf.classList.remove("show"); qf.innerHTML = ""; qf.setAttribute("aria-hidden", "true");
+                });
+              }, 100);
+            });
+          }
+
+        if (cancelBtn) {
+          cancelBtn.addEventListener("click", () => {
+            qf.classList.remove("show"); qf.innerHTML = ""; qf.setAttribute("aria-hidden", "true");
+          });
+        }
+      });
+    });
+
+    const cartBody = document.getElementById("cartBody");
+    const cartTotalEl = document.getElementById("cartTotal");
+    const paystackTotalEl = document.getElementById("paystackTotal");
+    const cartEmpty = document.getElementById("cartEmpty");
+    const cartWrap = document.getElementById("cartWrap");
+    const cartCount = document.getElementById("cartCount");
+    const paymentNote = document.getElementById("paymentNote");
+    const btnPay = document.getElementById("btnPay");
+    const btnProcess = document.getElementById("btnProcess");
+    const PAYSTACK_FEE_RATE = 0.02;
+
+    function calcPaystackTotals(baseTotal) {
+      const base = Number(baseTotal || 0);
+      const fee = Math.round(base * PAYSTACK_FEE_RATE * 100) / 100;
+      const total = Math.round((base + fee) * 100) / 100;
+      return { fee: fee, total: total };
+    }
+
+    function renderCart() {
+      if (!cartBody) return;
+      cartBody.innerHTML = "";
+      cart._data.forEach((it, i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td>" + it.serviceName + "</td>" +
+          "<td>" + it.phone + "</td>" +
+          "<td>" + (it.value || "-") + "</td>" +
+          '<td class="text-end"><strong>GHS ' + money2(it.amount || 0) + "</strong></td>" +
+          '<td class="text-end"><button class="btn btn-sm btn-outline-danger" data-rm="' + i + '">Remove</button></td>';
+        cartBody.appendChild(tr);
+      });
+
+      const n = cart._data.length;
+      if (cartCount) cartCount.textContent = String(n);
+
+      const payTotal = cart.total();
+      const paystackTotals = calcPaystackTotals(payTotal);
+      if (cartTotalEl) cartTotalEl.textContent = money2(payTotal);
+      if (paystackTotalEl) paystackTotalEl.textContent = money2(paystackTotals.total);
+
+      if (cartEmpty) cartEmpty.classList.toggle("d-none", n !== 0);
+      if (cartWrap) cartWrap.classList.toggle("d-none", n === 0);
+
+      lockProcessUntilPayment();
+    }
+
+    if (cartBody) {
+      cartBody.addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-rm]");
+        if (!b) return;
+        cart.remove(Number(b.getAttribute("data-rm")));
+        tell("Removed");
+      });
+    }
+
+    const btnClear = document.getElementById("btnClear");
+    if (btnClear) {
+      btnClear.addEventListener("click", () => {
+        if (!cart._data.length) return;
+        if (confirm("Clear all items?")) { cart.clear(); tell("Cart cleared"); }
+      });
+    }
+
+    function saveConfirmedPayment(obj) { try { localStorage.setItem(PAY_CONFIRMED_KEY, JSON.stringify(obj || {})); } catch (e) { } }
+    function getConfirmedPayment() { try { return JSON.parse(localStorage.getItem(PAY_CONFIRMED_KEY) || "{}"); } catch (e) { return {}; } }
+    function clearConfirmedPayment() { try { localStorage.removeItem(PAY_CONFIRMED_KEY); } catch (e) { } }
+
+    function isPaidEnough(confirmedAmtGhs, requiredGhs) {
+      return Number(confirmedAmtGhs || 0) + 1e-2 >= Number(requiredGhs || 0);
+    }
+
+    function lockProcessUntilPayment() {
+      const payTotal = cart.total();
+      const confirmed = getConfirmedPayment();
+      const ok = confirmed && confirmed.amount_ghs != null && isPaidEnough(confirmed.amount_ghs, payTotal);
+
+      if (btnProcess) btnProcess.disabled = !ok;
+      if (paymentNote) {
+        paymentNote.textContent = ok
+          ? ("Payment confirmed (Ref: " + (confirmed.reference || "") + "). Verifying & processing...")
+          : 'Payment required before processing. Click "Pay Now" (includes 2% fee).';
+      }
+    }
+
+    if (btnPay) {
+      btnPay.addEventListener("click", () => {
+        if (!cart._data.length) { tell("Cart is empty."); return; }
+
+        // Must have DB identity; no defaults
+        if (!ensurePaystackIdentityOrExplain()) return;
+
+        const pk = (window.PAYSTACK_PUBLIC_KEY || "").trim();
+        if (!pk) { tell("Payment is not configured. Contact support."); return; }
+
+        if (typeof window.PaystackPop === "undefined") {
+          tell("Paystack script not loaded. Please refresh or contact support.");
+          return;
+        }
+
+        const payTotalGhs = cart.total();
+        const paystackTotals = calcPaystackTotals(payTotalGhs);
+        const amountPesewas = pesewas(paystackTotals.total);
+        const ref = "PS-" + Date.now() + "-" + Math.floor(Math.random() * 1e6);
+
+        const items = cart._data.map(c => ({
+          s: c.serviceName, p: c.phone, v: c.value,
+          a: Number(c.amount || 0)
+        }));
+
+        setLoading(btnPay, true);
+
+        const psEmail = getPaystackEmailFromCart();
+        const handler = PaystackPop.setup({
+          key: pk,
+          email: psEmail,
+          amount: amountPesewas,
+          currency: "GHS",
+          firstname: PS_FIRST,
+          lastname: PS_LAST,
+          reference: ref,
+          metadata: {
+            payer: { email: psEmail, first_name: PS_FIRST, last_name: PS_LAST },
+            cart_snapshot: items,
+            pay_total_ghs: Number(paystackTotals.total.toFixed(2)),
+            base_total_ghs: Number(payTotalGhs.toFixed(2)),
+            fee_ghs: Number(paystackTotals.fee.toFixed(2)),
+            fee_note: "2% Paystack fee added to checkout amount; backend accepts any paid >= cart total.",
+            source: "speedlink_store_inline_checkout",
+            slug: SLUG
+          },
+          callback: function (response) {
+            const confirmedObj = {
+              reference: response.reference || ref,
+              amount_pesewas: amountPesewas,
+              amount_ghs: paystackTotals.total,
+              base_amount_ghs: payTotalGhs,
+              fee_ghs: paystackTotals.fee,
+              confirmed_at: new Date().toISOString(),
+              via_inline: true
+            };
+            saveConfirmedPayment(confirmedObj);
+            setLoading(btnPay, false);
+            tell("Payment received - verifying...");
+            lockProcessUntilPayment();
+            proceedCheckoutAuto();
+          },
+          onClose: function () {
+            setLoading(btnPay, false);
+          }
+        });
+
+        try { handler.openIframe(); }
+        catch (e) { setLoading(btnPay, false); tell("Unable to open payment window."); }
+      });
+    }
+
+    if (btnProcess) btnProcess.addEventListener("click", () => proceedCheckoutAuto());
+
+    async function proceedCheckoutAuto() {
+      const confirmed = getConfirmedPayment();
+      if (!cart._data.length) { tell("Cart is empty."); return; }
+
+      // Must have DB identity; no defaults
+      if (!ensurePaystackIdentityOrExplain()) return;
+
+      const payNow = cart.total();
+
+      if (!confirmed || confirmed.amount_ghs == null) {
+        tell("Please pay first."); return;
+      }
+      if (!isPaidEnough(confirmed.amount_ghs, payNow)) {
+        tell("Amount paid is less than required. Please complete full payment.");
+        if (btnProcess) btnProcess.disabled = true;
+        return;
+      }
+
+      const portedOk = await ensurePortedConfirmedForCart(cart._data);
+      if (!portedOk) return;
+
+      if (btnProcess) setLoading(btnProcess, true);
+
+      try {
+        const payerEmail = getPaystackEmailFromCart();
+        const r = await fetch("/store-checkout/" + encodeURIComponent(SLUG), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            cart: cart._data,
+            method: "paystack_inline",
+            paystack: {
+              reference: confirmed.reference || "",
+              amount_pesewas: Math.round(payNow * 100),
+              amount_ghs: payNow,
+              via_inline: true,
+              payer: { email: payerEmail, first_name: PS_FIRST, last_name: PS_LAST }
+            }
+          })
+        });
+
+        const j = await r.json();
+        if (r.ok && j.success) {
+          tell("Order received: " + (j.order_id || ""));
+          cart.clear();
+          clearConfirmedPayment();
+
+          const statusBox = document.getElementById("orderStatusBox");
+          const statusText = document.getElementById("orderStatusText");
+          const statusLink = document.getElementById("orderStatusLink");
+          if (statusBox) statusBox.classList.remove("d-none");
+          if (statusText) statusText.textContent = (j.order_id || "");
+          const first = j.items && j.items[0];
+          if (statusLink && first && first.phone) {
+            statusLink.href = "/check-status?phone=" + encodeURIComponent(first.phone);
+            statusLink.classList.remove("d-none");
+          } else if (statusLink) {
+            statusLink.classList.add("d-none");
+          }
+          if (paymentNote) {
+            paymentNote.textContent = "Order received and processing. You can close this window.";
+          }
+        } else {
+          tell(j.message || "Checkout failed.");
+        }
+      } catch (_e) {
+        tell("Network error.");
+      }
+
+      if (btnProcess) setLoading(btnProcess, false);
+    }
+
+    cart.load();
+    renderCart();
+  })();
+</script>
+
+</body>
+</html>

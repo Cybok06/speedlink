@@ -1,0 +1,1035 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SpeedLink - Services</title>
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/png" href="{{ url_for('brand_images', filename='logo_for_white_bg.png') }}">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+  <style>
+    :root { --sea-blue:#0EA5E9; --secondary:#0A1A2F; }
+
+    @media (min-width: 992px) { .admin-content { margin-left: 260px; padding: 2rem; } }
+    @media (max-width: 991px) { .admin-content { margin-top: 1rem; padding: 1rem; } }
+
+    .btn-seablue { background-color: var(--sea-blue); border-color: var(--sea-blue); color:#fff; }
+    .btn-seablue:hover { filter:brightness(0.95); color:#fff; }
+    .small-muted { font-size:.9rem; color:#6c757d; }
+
+    .svc-card-img { width:100%; height:140px; object-fit:cover; border-radius:12px; background:#f3f6f9; }
+    .svc-chip { background:#f8fafc; border:1px solid #e9ecef; border-radius:999px; padding:.2rem .55rem; font-size:.8rem; }
+
+    .svc-badge { font-size:.75rem; padding:.35rem .5rem; border-radius:999px; border:1px solid transparent; display:inline-block; }
+    .svc-type-API { background:rgba(25,135,84,.12); color:#198754; border-color:rgba(25,135,84,.3); }
+    .svc-type-OFF { background:rgba(220,53,69,.12); color:#dc3545; border-color:rgba(220,53,69,.3); }
+    .svc-status-OPEN { background:rgba(25,135,84,.12); color:#198754; border-color:rgba(25,135,84,.3); }
+    .svc-status-CLOSED { background:rgba(220,53,69,.12); color:#dc3545; border-color:rgba(220,53,69,.3); }
+    .svc-avail-AVAILABLE { background:rgba(13,110,253,.12); color:#0d6efd; border-color:rgba(13,110,253,.3); }
+    .svc-avail-OUT_OF_STOCK { background:rgba(255,193,7,.15); color:#9a6e00; border-color:rgba(255,193,7,.35); }
+
+    /* Sticky header/footer for long forms */
+    .modal-header { position: sticky; top: 0; background: #fff; z-index: 3; border-bottom: 1px solid rgba(0,0,0,.125); }
+    .modal-footer { position: sticky; bottom: 0; background: #fff; z-index: 3; border-top: 1px solid rgba(0,0,0,.125); }
+
+    .img-preview-lg { width:100%; height:220px; object-fit:cover; border-radius:10px; background:#f3f6f9; }
+
+    .offers-grid thead th { position: sticky; top: 0; background: #fff; z-index: 2; }
+    .offers-grid input { min-width: 110px; }
+    .offers-grid .row-actions { width: 48px; }
+    .paste-hint { font-size: .85rem; color:#6c757d; }
+
+    /* Fullscreen modal refinements */
+    .modal-fullscreen .modal-content{
+      border-radius: 0;
+    }
+    .tab-pane .table-responsive{
+      max-height: calc(100vh - 320px);
+    }
+    .price-tabs{
+      overflow-x:auto;
+      overflow-y:hidden;
+      flex-wrap:nowrap;
+      scrollbar-width:thin;
+    }
+    .price-tabs .nav-link{
+      white-space:nowrap;
+    }
+    @media (max-width: 575px){
+      .admin-toolbar,
+      .card-actions{
+        width:100%;
+      }
+      .admin-toolbar > *{
+        width:100%;
+        max-width:none !important;
+      }
+      .card-actions{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+      }
+      .card-actions .btn{
+        border-radius:.375rem !important;
+      }
+      .tab-content{
+        padding:.75rem !important;
+      }
+      .tab-pane .table-responsive{
+        max-height:calc(100vh - 260px);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  {% include 'admin_sidebar.html' %}
+
+  <div class="admin-content">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <h2 class="mb-0">Services</h2>
+      <div class="d-flex gap-2 flex-wrap admin-toolbar">
+        <input id="svcSearch" type="text" class="form-control" placeholder="Search services...">
+        <select id="typeFilter" class="form-select" style="max-width:180px">
+          <option value="">All Types</option>
+          <option value="API">API (On)</option>
+          <option value="OFF">OFF</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="servicesGrid" class="row g-3">
+      {% for svc in services %}
+        {% set sid = svc._id_str %}
+        {% set count_default = svc.offers|length if svc.offers else 0 %}
+        {% set count_store = svc.store_offers|length if svc.store_offers else 0 %}
+        {% set count_public = svc.public_offers|length if svc.public_offers else 0 %}
+        {% set t = (svc.type or 'API') %}
+        {% set s = (svc.status or 'OPEN') %}
+        {% set a = (svc.availability or 'AVAILABLE') %}
+
+        <div class="col-12 col-sm-6 col-lg-4 col-xxl-3 svc-card"
+             data-name="{{ (svc.name or '')|lower }}"
+             data-type="{{ t }}"
+             data-status="{{ s }}"
+             data-availability="{{ a }}">
+          <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+              <img src="{{ svc.image_url or '' }}" alt="" class="svc-card-img mb-3">
+
+              <div class="d-flex align-items-start justify-content-between">
+                <div class="me-2">
+                  <div class="h6 mb-1 text-break">{{ svc.name }}</div>
+                  <div class="d-flex flex-wrap gap-2">
+                    <span class="svc-chip">Default Offers: {{ count_default }}</span>
+                    <span class="svc-chip">Store Offers: {{ count_store }}</span>
+                    <span class="svc-chip">Public Offers: {{ count_public }}</span>
+                    <span class="svc-chip">Agent Pricing: {{ svc.customer_profits|length if svc.customer_profits else 0 }}</span>
+                  </div>
+                </div>
+
+                <div class="text-end">
+                  <div class="mb-1"><span class="svc-badge {{ 'svc-status-OPEN' if s=='OPEN' else 'svc-status-CLOSED' }}" data-role="status-badge">{{ s }}</span></div>
+                  <div><span class="svc-badge {{ 'svc-avail-AVAILABLE' if a=='AVAILABLE' else 'svc-avail-OUT_OF_STOCK' }}" data-role="availability-badge">{{ a }}</span></div>
+                </div>
+              </div>
+
+              <div class="small text-muted mt-2">
+                Created: {{ svc.created_at.strftime('%Y-%m-%d %H:%M') if svc.created_at else '-' }}
+              </div>
+
+              <div class="mt-3 d-grid gap-2">
+                <div class="btn-group card-actions" role="group">
+                  <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editServiceModal-{{ sid }}">Edit Prices</button>
+                  <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#offersModal-{{ sid }}">Offers</button>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                  <button class="btn btn-sm {{ 'btn-outline-warning' if s=='OPEN' else 'btn-success' }}"
+                          onclick="toggleStatus('{{ sid }}', '{{ s }}', this)">
+                    {{ 'Close' if s=='OPEN' else 'Reopen' }}
+                  </button>
+
+                  <button class="btn btn-sm {{ 'btn-outline-warning' if a=='AVAILABLE' else 'btn-success' }}"
+                          onclick="toggleAvailability('{{ sid }}', '{{ a }}', this)">
+                    {{ 'Mark Out of Stock' if a=='AVAILABLE' else 'Mark Available' }}
+                  </button>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
+      {% if services|length == 0 %}
+        <div class="col-12 text-center text-muted">No services found.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Add Service -->
+  <div class="modal fade" id="addServiceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down modal-dialog-centered modal-dialog-xxl">
+      <div class="modal-content">
+        <form method="post" action="{{ url_for('admin_services.create_service') }}">
+          <div class="modal-header">
+            <h5 class="modal-title">Add Service</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <img id="create_img_preview" class="img-preview-lg mb-2" src="" alt="">
+                <input type="hidden" name="image_url" id="create_image_url">
+                <div class="d-grid gap-2">
+                  <input type="file" id="create_image_file" accept="image/*" class="form-control">
+                  <small class="small-muted">Upload from your device (stored on server)</small>
+                  <div id="create_upload_status" class="small-muted"></div>
+                </div>
+              </div>
+
+              <div class="col-md-8">
+                <label class="form-label">Service Name</label>
+                <input type="text" name="service_name" class="form-control" placeholder="e.g., MTN" required>
+
+                <div class="row g-3 mt-1">
+                  <div class="col-sm-6">
+                    <label class="form-label">Store Pricing</label>
+                    <div class="form-check mt-2">
+                      <input class="form-check-input" type="checkbox" id="create_copy_default_to_store" name="copy_default_to_store" value="1" checked>
+                      <label class="form-check-label" for="create_copy_default_to_store">
+                        Create Store Prices same as Default
+                      </label>
+                    </div>
+                    <small class="small-muted">You can later edit Store Prices separately.</small>
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label">Public Pricing</label>
+                    <div class="form-check mt-2">
+                      <input class="form-check-input" type="checkbox" id="create_copy_default_to_public" name="copy_default_to_public" value="1" checked>
+                      <label class="form-check-label" for="create_copy_default_to_public">
+                        Create Public Prices same as Default
+                      </label>
+                    </div>
+                    <small class="small-muted">Used for the public landing page.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr>
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="mb-0">Default Offers</h6>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-secondary add-offer-btn" data-target-container="#create_offers_tbody">+ Add</button>
+                <button type="button" class="btn btn-sm btn-outline-dark" data-paste-target="#create_offers_tbody" data-name-prefix="offers">Paste CSV</button>
+              </div>
+            </div>
+
+            <div class="table-responsive" style="max-height: 60vh;">
+              <table class="table table-sm offers-grid align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 220px;">Amount</th>
+                    <th>Value</th>
+                    <th class="row-actions"></th>
+                  </tr>
+                </thead>
+                <tbody id="create_offers_tbody">
+                  <!-- seeded by JS -->
+                </tbody>
+              </table>
+            </div>
+            <div class="paste-hint">Tip: Paste rows like <code>20,1GB</code> (Amount,Value).</div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-seablue">Save Service</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {% for svc in services %}
+    {% set sid = svc._id_str %}
+    {% set count_default = svc.offers|length if svc.offers else 0 %}
+    {% set count_store = svc.store_offers|length if svc.store_offers else 0 %}
+    {% set count_public = svc.public_offers|length if svc.public_offers else 0 %}
+
+    <!-- Offers viewer -->
+    <div class="modal fade" id="offersModal-{{ sid }}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down modal-dialog-centered modal-dialog-xxl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Offers - {{ svc.name }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-12 col-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0">Default Offers ({{ count_default }})</h6>
+                </div>
+
+                {% if count_default > 0 %}
+                  <div class="table-responsive">
+                    <table class="table table-sm table-striped align-middle">
+                      <thead><tr><th style="width:160px;">Amount</th><th>Value</th></tr></thead>
+                      <tbody>
+                        {% for of in svc.offers %}
+                          <tr>
+                            <td>{{ of.amount if of.amount is not none else "-" }}</td>
+                            <td class="text-break">{{ of.value_text | default(of.value) | default("-") }}</td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                {% else %}
+                  <div class="text-muted">No default offers.</div>
+                {% endif %}
+              </div>
+
+              <div class="col-12 col-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0">Store Offers ({{ count_store }})</h6>
+                </div>
+
+                {% if count_store > 0 %}
+                  <div class="table-responsive">
+                    <table class="table table-sm table-striped align-middle">
+                      <thead><tr><th style="width:160px;">Amount</th><th>Value</th></tr></thead>
+                      <tbody>
+                        {% for of in svc.store_offers %}
+                          <tr>
+                            <td>{{ of.amount if of.amount is not none else "-" }}</td>
+                            <td class="text-break">{{ of.value_text | default(of.value) | default("-") }}</td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                {% else %}
+                  <div class="text-muted">No store offers (store will fallback to default unless you set store pricing).</div>
+                {% endif %}
+              </div>
+
+              <div class="col-12 col-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0">Public Offers ({{ count_public }})</h6>
+                </div>
+
+                {% if count_public > 0 %}
+                  <div class="table-responsive">
+                    <table class="table table-sm table-striped align-middle">
+                      <thead><tr><th style="width:160px;">Amount</th><th>Value</th></tr></thead>
+                      <tbody>
+                        {% for of in svc.public_offers %}
+                          <tr>
+                            <td>{{ of.amount if of.amount is not none else "-" }}</td>
+                            <td class="text-break">{{ of.value_text | default(of.value) | default("-") }}</td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                {% else %}
+                  <div class="text-muted">No public offers (landing page will fallback to default unless you set public pricing).</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-outline-primary"
+                    data-bs-target="#editServiceModal-{{ sid }}"
+                    data-bs-toggle="modal"
+                    data-bs-dismiss="modal">
+              Edit Prices
+            </button>
+            <button class="btn btn-seablue" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Service (FULLSCREEN) -->
+    <div class="modal fade" id="editServiceModal-{{ sid }}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
+        <div class="modal-content">
+          <form id="priceForm-{{ sid }}" method="post" action="{{ url_for('admin_services.update_service', service_id=sid) }}">
+            <input type="hidden" name="service_name" value="{{ svc.name }}">
+            <input type="hidden" name="image_url" value="{{ svc.image_url or '' }}">
+          </form>
+
+          <div class="modal-header">
+            <h5 class="modal-title mb-0">Edit Prices - {{ svc.name }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="container-fluid">
+                <ul class="nav nav-tabs price-tabs" id="priceTabs-{{ sid }}" role="tablist">
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tab-store-{{ sid }}" data-bs-toggle="tab"
+                            data-bs-target="#pane-store-{{ sid }}" type="button" role="tab">
+                      Store Pricing
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tab-public-{{ sid }}" data-bs-toggle="tab"
+                            data-bs-target="#pane-public-{{ sid }}" type="button" role="tab">
+                      Public Pricing
+                    </button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tab-agent-{{ sid }}" data-bs-toggle="tab"
+                            data-bs-target="#pane-agent-{{ sid }}" type="button" role="tab">
+                      Agent Pricing
+                    </button>
+                  </li>
+                </ul>
+
+                <div class="tab-content border border-top-0 rounded-bottom p-3" id="priceTabsContent-{{ sid }}">
+                      <!-- STORE -->
+                      <div class="tab-pane fade show active" id="pane-store-{{ sid }}" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <div>
+                            <h6 class="mb-0">Store Offers</h6>
+                          </div>
+                        </div>
+
+                        <div class="table-responsive">
+                          <table class="table table-sm offers-grid align-middle mb-0">
+                            <thead>
+                              <tr>
+                                <th style="width: 220px;">Amount</th>
+                                <th>Volume</th>
+                              </tr>
+                            </thead>
+                            <tbody id="offers_store_{{ sid }}">
+                              {% set store_edit_offers = svc.store_offers if svc.store_offers and svc.store_offers|length > 0 else svc.offers %}
+                              {% if store_edit_offers and store_edit_offers|length > 0 %}
+                                {% for of in store_edit_offers %}
+                                  <tr class="offer-row" data-offer-kind="store">
+                                    <td>
+                                      <input type="number" step="0.01" min="0"
+                                              class="form-control"
+                                              form="priceForm-{{ sid }}"
+                                              name="store_offers_amount[]"
+                                             value="{{ of.amount if of.amount is not none else '' }}"
+                                             placeholder="Amount">
+                                    </td>
+                                    <td>
+                                      <input type="hidden" form="priceForm-{{ sid }}" name="store_offers_value[]" value="{{ of.value or '' }}">
+                                      <input type="text" class="form-control"
+                                             value="{{ of.value_text | default(of.value) | default('-') }}"
+                                             disabled>
+                                    </td>
+                                  </tr>
+                                {% endfor %}
+                              {% else %}
+                                <tr>
+                                  <td colspan="2" class="text-muted">No volumes available.</td>
+                                </tr>
+                              {% endif %}
+                            </tbody>
+                          </table>
+                        </div>
+
+                      </div>
+
+                      <!-- PUBLIC -->
+                      <div class="tab-pane fade" id="pane-public-{{ sid }}" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <div>
+                            <h6 class="mb-0">Public Offers</h6>
+                          </div>
+                        </div>
+
+                        <div class="table-responsive">
+                          <table class="table table-sm offers-grid align-middle mb-0">
+                            <thead>
+                              <tr>
+                                <th style="width: 220px;">Amount</th>
+                                <th>Volume</th>
+                              </tr>
+                            </thead>
+                            <tbody id="offers_public_{{ sid }}">
+                              {% set public_edit_offers = svc.public_offers if svc.public_offers and svc.public_offers|length > 0 else svc.offers %}
+                              {% if public_edit_offers and public_edit_offers|length > 0 %}
+                                {% for of in public_edit_offers %}
+                                  <tr class="offer-row" data-offer-kind="public">
+                                    <td>
+                                      <input type="number" step="0.01" min="0"
+                                              class="form-control"
+                                              form="priceForm-{{ sid }}"
+                                              name="public_offers_amount[]"
+                                             value="{{ of.amount if of.amount is not none else '' }}"
+                                             placeholder="Amount">
+                                    </td>
+                                    <td>
+                                      <input type="hidden" form="priceForm-{{ sid }}" name="public_offers_value[]" value="{{ of.value or '' }}">
+                                      <input type="text" class="form-control"
+                                             value="{{ of.value_text | default(of.value) | default('-') }}"
+                                             disabled>
+                                    </td>
+                                  </tr>
+                                {% endfor %}
+                              {% else %}
+                                <tr>
+                                  <td colspan="2" class="text-muted">No volumes available.</td>
+                                </tr>
+                              {% endif %}
+                            </tbody>
+                          </table>
+                        </div>
+
+                      </div>
+
+                      <!-- AGENT -->
+                      <div class="tab-pane fade" id="pane-agent-{{ sid }}" role="tabpanel">
+                        <div class="border rounded p-3 mb-3">
+                          <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+                            <div>
+                              <h6 class="mb-1">Set Manual Agent Prices</h6>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetCustomerPricingForm('{{ sid }}')">Clear form</button>
+                          </div>
+                          <form id="customerPricingForm-{{ sid }}" class="row g-3 align-items-end" method="post" action="{{ url_for('admin_services.set_customer_profit_for_service', service_id=sid) }}">
+                            <div class="col-12 col-lg-5">
+                              <label class="form-label">Customer</label>
+                              {% if customers %}
+                                <input type="text" class="form-control mb-2" placeholder="Search customers..." data-filter-select="#customer_select_{{ sid }}">
+                                <select id="customer_select_{{ sid }}" name="customer_id" class="form-select">
+                                  <option value="">All Agents</option>
+                                  {% for c in customers %}<option value="{{ c._id }}">{{ c.name }}</option>{% endfor %}
+                                </select>
+                              {% else %}
+                                <input type="text" name="customer_id" class="form-control" placeholder="Customer ObjectId">
+                              {% endif %}
+                            </div>
+                            <div class="col-12 col-lg-7">
+                              <div class="small-muted">Service: <strong>{{ svc.name }}</strong></div>
+                            </div>
+                            <div class="col-12">
+                              <div class="table-responsive border rounded">
+                                <table class="table table-sm align-middle mb-0">
+                                  <thead class="table-light">
+                                    <tr>
+                                      <th style="width:90px;">#</th>
+                                      <th>Offer</th>
+                                      <th style="width:180px;">System Price</th>
+                                      <th style="width:220px;">Agent Price</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {% for of in svc.offers %}
+                                      <tr>
+                                        <td>
+                                          {{ loop.index }}
+                                          <input type="hidden" name="offer_index[]" value="{{ loop.index0 }}">
+                                        </td>
+                                        <td class="text-break">{{ of.value_text | default(of.value) | default('-') }}</td>
+                                        <td>GHS {{ '%.2f'|format((of.amount or 0)|float) }}</td>
+                                        <td>
+                                          <input
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            name="offer_total[]"
+                                            class="form-control"
+                                            data-offer-input
+                                            data-service-id="{{ sid }}"
+                                            data-offer-index="{{ loop.index0 }}"
+                                          >
+                                        </td>
+                                      </tr>
+                                    {% endfor %}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                            <div class="col-12 d-grid d-md-flex justify-content-md-end gap-2">
+                              <button class="btn btn-outline-secondary" type="submit" name="pricing_scope" value="all">Save For All Agents</button>
+                              <button class="btn btn-seablue" type="submit" name="pricing_scope" value="customer">Save For Selected Customer</button>
+                            </div>
+                          </form>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                          <h6 class="mb-0">Existing Pricing Rules</h6>
+                          <input type="text" class="form-control form-control-sm" style="max-width:280px"
+                                 placeholder="Filter overrides..." data-filter-table="#cp_table_{{ sid }}">
+                        </div>
+
+                        {% if svc.default_agent_pricing %}
+                          <div class="border rounded p-3 mb-3 bg-light-subtle">
+                            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                              <div>
+                                <div class="fw-semibold">All Agents</div>
+                                <div class="small text-muted">{{ svc.default_agent_pricing.offers_count }} offer{{ '' if svc.default_agent_pricing.offers_count == 1 else 's' }}</div>
+                                <div class="small text-muted">{{ svc.default_agent_pricing.offers_summary }}</div>
+                              </div>
+                              <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                                {% if svc.default_agent_pricing.updated_at %}
+                                  <span class="small text-muted">{{ svc.default_agent_pricing.updated_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                {% endif %}
+                                <button
+                                  class="btn btn-outline-primary btn-sm"
+                                  type="button"
+                                  data-populate-customer-pricing
+                                  data-service-id="{{ sid }}"
+                                  data-customer-id=""
+                                  data-offers="{{ (svc.default_agent_pricing.offers or []) | tojson | forceescape }}">
+                                  Edit
+                                </button>
+                                <form method="post" action="{{ url_for('admin_services.delete_customer_profit_for_service', service_id=sid, customer_id='__all__') }}" onsubmit="return confirm('Remove default pricing for all agents?');" class="d-inline">
+                                  <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+                                </form>
+                              </div>
+                            </div>
+                          </div>
+                        {% endif %}
+
+                        {% set overrides = svc.customer_profits if svc.customer_profits else [] %}
+                        {% if overrides|length > 0 %}
+                          <div class="table-responsive">
+                            <table id="cp_table_{{ sid }}" class="table table-sm align-middle">
+                              <thead>
+                                <tr>
+                                  <th>Customer</th>
+                                  <th>Configured Prices</th>
+                                  <th style="width:160px;">Updated</th>
+                                  <th style="width:260px;" class="text-end">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {% for ov in overrides %}
+                                <tr>
+                                  <td class="text-break">
+                                    <div class="fw-semibold override-name">{{ ov.customer_name }}</div>
+                                    <div class="text-muted small override-id">{{ ov.customer_id }}</div>
+                                  </td>
+                                  <td>
+                                    <div class="fw-semibold">{{ ov.offers_count }} offer{{ '' if ov.offers_count == 1 else 's' }}</div>
+                                    <div class="text-muted small">{{ ov.offers_summary }}</div>
+                                  </td>
+                                  <td class="text-nowrap">
+                                    {% if ov.updated_at %}{{ ov.updated_at.strftime('%Y-%m-%d %H:%M') }}{% else %}-{% endif %}
+                                  </td>
+                                  <td class="text-end">
+                                    <button
+                                      class="btn btn-outline-primary btn-sm"
+                                      type="button"
+                                      data-populate-customer-pricing
+                                      data-service-id="{{ sid }}"
+                                      data-customer-id="{{ ov.customer_id }}"
+                                      data-offers="{{ (ov.offers or []) | tojson | forceescape }}">
+                                      Edit Prices
+                                    </button>
+                                    <form method="post" action="{{ url_for('admin_services.delete_customer_profit_for_service', service_id=sid, customer_id=ov.customer_id) }}" onsubmit="return confirm('Remove override for this customer?');" class="d-inline">
+                                      <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+                                    </form>
+                                  </td>
+                                </tr>
+                                {% endfor %}
+                              </tbody>
+                            </table>
+                          </div>
+                        {% else %}
+                          <div class="text-muted">No customer-specific pricing overrides yet.</div>
+                        {% endif %}
+                      </div>
+                </div>
+
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" form="priceForm-{{ sid }}" class="btn btn-seablue" data-store-public-submit="{{ sid }}">Save Store/Public Prices</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Done</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  {% endfor %}
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    /* ---------------- Search & Filter ---------------- */
+    const svcSearch = document.getElementById('svcSearch');
+    const typeFilter = document.getElementById('typeFilter');
+    function applyFilter() {
+      const q = (svcSearch?.value || '').toLowerCase();
+      const t = (typeFilter?.value || '');
+      document.querySelectorAll('.svc-card').forEach(card => {
+        const name = card.getAttribute('data-name') || '';
+        const type = card.getAttribute('data-type') || '';
+        const okName = !q || name.includes(q);
+        const okType = !t || t === type;
+        card.style.display = (okName && okType) ? '' : 'none';
+      });
+    }
+    svcSearch?.addEventListener('input', applyFilter);
+    typeFilter?.addEventListener('change', applyFilter);
+
+    /* ---------------- Badge helpers ---------------- */
+    function setBadge(el, classesRemove, classAdd, text) {
+      if (!el) return;
+      classesRemove.forEach(c => el.classList.remove(c));
+      if (classAdd) el.classList.add(classAdd);
+      if (text) el.textContent = text;
+    }
+
+    async function toggleStatus(id, current, btn) {
+      try {
+        const desired = current === 'CLOSED' ? 'OPEN' : 'CLOSED';
+        btn?.setAttribute('disabled', 'disabled');
+        const res = await fetch(`/admin/services/${id}/status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          body: JSON.stringify({ status: desired })
+        });
+        const data = await res.json();
+        if (data.success) {
+          const card = btn.closest('.svc-card');
+          if (card) {
+            card.setAttribute('data-status', data.status);
+            const badge = card.querySelector('[data-role="status-badge"]');
+            setBadge(badge, ['svc-status-OPEN','svc-status-CLOSED'], data.status === 'OPEN' ? 'svc-status-OPEN' : 'svc-status-CLOSED', data.status);
+            const isOpen = data.status === 'OPEN';
+            btn.classList.toggle('btn-outline-warning', isOpen);
+            btn.classList.toggle('btn-success', !isOpen);
+            btn.textContent = isOpen ? 'Close' : 'Reopen';
+            btn.setAttribute('onclick', `toggleStatus('${id}', '${data.status}', this)`);
+          }
+        } else alert(data.error || 'Failed to update status.');
+      } catch (e) { alert('Network error.'); }
+      finally { btn?.removeAttribute('disabled'); }
+    }
+
+    async function toggleAvailability(id, current, btn) {
+      try {
+        const desired = current === 'OUT_OF_STOCK' ? 'AVAILABLE' : 'OUT_OF_STOCK';
+        btn?.setAttribute('disabled', 'disabled');
+        const res = await fetch(`/admin/services/${id}/availability`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          body: JSON.stringify({ availability: desired })
+        });
+        const data = await res.json();
+        if (data.success) {
+          const card = btn.closest('.svc-card');
+          if (card) {
+            card.setAttribute('data-availability', data.availability);
+            const badge = card.querySelector('[data-role="availability-badge"]');
+            setBadge(badge, ['svc-avail-AVAILABLE','svc-avail-OUT_OF_STOCK'], data.availability === 'AVAILABLE' ? 'svc-avail-AVAILABLE' : 'svc-avail-OUT_OF_STOCK', data.availability);
+            const isAvail = data.availability === 'AVAILABLE';
+            btn.classList.toggle('btn-outline-warning', isAvail);
+            btn.classList.toggle('btn-success', !isAvail);
+            btn.textContent = isAvail ? 'Mark Out of Stock' : 'Mark Available';
+            btn.setAttribute('onclick', `toggleAvailability('${id}', '${data.availability}', this)`);
+          }
+        } else alert(data.error || 'Failed to update availability.');
+      } catch (e) { alert('Network error.'); }
+      finally { btn?.removeAttribute('disabled'); }
+    }
+
+    /* ---------------- Image upload ---------------- */
+    async function uploadToServer(file, { statusEl, previewEl, hiddenInputEl }) {
+      if (!file) return;
+      const formData = new FormData();
+      formData.append("image", file);
+      if (statusEl) statusEl.textContent = "Uploading...";
+      try {
+        const res = await fetch("/upload_service_image", { method: "POST", body: formData });
+        const data = await res.json();
+        if (data.success) {
+          hiddenInputEl.value = data.url;
+          if (previewEl) previewEl.src = data.url;
+          if (statusEl) statusEl.textContent = "Image uploaded.";
+        } else {
+          if (statusEl) statusEl.textContent = "Upload failed.";
+          console.error("Server error:", data.error);
+        }
+      } catch (err) {
+        if (statusEl) statusEl.textContent = "Upload error.";
+        console.error(err);
+      }
+    }
+
+    /* ---------------- Offers helpers ---------------- */
+    function addOfferRow(container, namePrefix) {
+      const amountName = (namePrefix === 'store_offers')
+        ? 'store_offers_amount[]'
+        : (namePrefix === 'public_offers' ? 'public_offers_amount[]' : 'offers_amount[]');
+      const valueName  = (namePrefix === 'store_offers')
+        ? 'store_offers_value[]'
+        : (namePrefix === 'public_offers' ? 'public_offers_value[]' : 'offers_value[]');
+
+      const tr = document.createElement("tr");
+      tr.className = "offer-row";
+      tr.innerHTML = `
+        <td><input type="number" step="0.01" min="0" class="form-control" name="${amountName}" placeholder="Amount"></td>
+        <td><input type="text" class="form-control" name="${valueName}" placeholder="Value"></td>
+        <td class="text-end"><button type="button" class="btn btn-outline-danger btn-sm remove-offer-btn">&times;</button></td>
+      `;
+      container.appendChild(tr);
+    }
+
+    function seedCreateOffers() {
+      const tbody = document.getElementById("create_offers_tbody");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+      addOfferRow(tbody, 'offers');
+    }
+
+    function wireCsvPasteButtons() {
+      document.querySelectorAll('[data-paste-target]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const targetSel = btn.getAttribute('data-paste-target');
+          const prefix = btn.getAttribute('data-name-prefix') || 'offers';
+          const tbody = document.querySelector(targetSel);
+          if (!tbody) return;
+
+          const text = await navigator.clipboard.readText().catch(() => "");
+          const pasted = text || prompt("Paste CSV rows here (Amount,Value) and click OK:", "");
+          if (!pasted) return;
+
+          const lines = pasted.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+          lines.forEach(line => {
+            const [amt, val] = line.split(",").map(s => (s ?? "").trim());
+            const amountName = (prefix === 'store_offers')
+              ? 'store_offers_amount[]'
+              : (prefix === 'public_offers' ? 'public_offers_amount[]' : 'offers_amount[]');
+            const valueName  = (prefix === 'store_offers')
+              ? 'store_offers_value[]'
+              : (prefix === 'public_offers' ? 'public_offers_value[]' : 'offers_value[]');
+
+            const tr = document.createElement("tr");
+            tr.className = "offer-row";
+            tr.innerHTML = `
+              <td><input type="number" step="0.01" min="0" class="form-control" name="${amountName}" value="${amt || ""}" placeholder="Amount"></td>
+              <td><input type="text" class="form-control" name="${valueName}" value="${(val || "").replace(/"/g,'&quot;')}" placeholder="Value"></td>
+              <td class="text-end"><button type="button" class="btn btn-outline-danger btn-sm remove-offer-btn">&times;</button></td>
+            `;
+            tbody.appendChild(tr);
+          });
+        });
+      });
+    }
+
+    /* Remove-offer buttons */
+    document.body.addEventListener("click", function (e) {
+      if (e.target.classList.contains("remove-offer-btn")) {
+        const row = e.target.closest(".offer-row");
+        const container = row?.parentElement;
+        if (!row || !container) return;
+        const rows = container.querySelectorAll(".offer-row");
+        if (rows.length > 1) row.remove();
+        else row.querySelectorAll("input").forEach(i => i.value = "");
+      }
+    });
+
+    /* Add-offer buttons */
+    document.addEventListener("DOMContentLoaded", function () {
+      const addModal = document.getElementById("addServiceModal");
+      if (addModal) {
+        addModal.addEventListener("show.bs.modal", () => {
+          const hidden = document.getElementById("create_image_url");
+          const prev   = document.getElementById("create_img_preview");
+          const stat   = document.getElementById("create_upload_status");
+          if (hidden) hidden.value = "";
+          if (prev) prev.src = "";
+          if (stat) stat.textContent = "";
+          seedCreateOffers();
+        });
+      }
+
+      const createFile = document.getElementById("create_image_file");
+      const createHidden = document.getElementById("create_image_url");
+      const createPrev = document.getElementById("create_img_preview");
+      const createStat = document.getElementById("create_upload_status");
+      if (createFile) {
+        createFile.addEventListener("change", (e) => {
+          uploadToServer(e.target.files[0], { statusEl: createStat, previewEl: createPrev, hiddenInputEl: createHidden });
+        });
+      }
+
+      document.addEventListener("change", function (e) {
+        if (e.target.classList.contains("edit-image-file")) {
+          const sid = e.target.dataset.sid;
+          uploadToServer(e.target.files[0], {
+            statusEl: document.getElementById(`edit_upload_status_${sid}`),
+            previewEl: document.getElementById(`edit_img_preview_${sid}`),
+            hiddenInputEl: document.getElementById(`edit_image_url_${sid}`)
+          });
+        }
+      });
+
+      document.querySelectorAll(".add-offer-btn").forEach(addBtn => {
+        const containerSel = addBtn.getAttribute("data-target-container");
+        const prefix = addBtn.getAttribute("data-name-prefix") || 'offers';
+        if (!containerSel) return;
+        addBtn.addEventListener("click", function () {
+          const cont = document.querySelector(containerSel);
+          if (!cont) return;
+          addOfferRow(cont, prefix);
+        });
+      });
+
+      wireCsvPasteButtons();
+
+      document.querySelectorAll('[id^="priceTabs-"] [data-bs-toggle="tab"]').forEach(tabBtn => {
+        const tabs = tabBtn.closest('[id^="priceTabs-"]');
+        const sid = tabs?.id?.replace('priceTabs-', '');
+        const submitBtn = sid ? document.querySelector(`[data-store-public-submit="${sid}"]`) : null;
+        if (!submitBtn) return;
+        const syncSubmit = (target) => {
+          submitBtn.classList.toggle('d-none', target === `#pane-agent-${sid}`);
+        };
+        tabBtn.addEventListener('shown.bs.tab', (event) => {
+          syncSubmit(event.target.getAttribute('data-bs-target'));
+        });
+        if (tabBtn.classList.contains('active')) {
+          syncSubmit(tabBtn.getAttribute('data-bs-target'));
+        }
+      });
+    });
+
+    /* copy pricing rows between tabs */
+    function copyPricing(sid, fromKind, toKind){
+      const fromTbody = document.getElementById(
+        fromKind === 'store'
+          ? `offers_store_${sid}`
+          : (fromKind === 'public' ? `offers_public_${sid}` : `offers_default_${sid}`)
+      );
+      const toTbody = document.getElementById(
+        toKind === 'store'
+          ? `offers_store_${sid}`
+          : (toKind === 'public' ? `offers_public_${sid}` : `offers_default_${sid}`)
+      );
+      if (!fromTbody || !toTbody) return;
+
+      // read rows
+      const rows = Array.from(fromTbody.querySelectorAll("tr.offer-row"));
+      const data = rows.map(r => {
+        const inputs = r.querySelectorAll("input");
+        return {
+          amount: inputs?.[0]?.value ?? "",
+          value:  inputs?.[1]?.value ?? ""
+        };
+      }).filter(x => (x.amount || x.value));
+
+      // clear target
+      toTbody.innerHTML = "";
+
+      const prefix = (toKind === 'store') ? 'store_offers' : (toKind === 'public' ? 'public_offers' : 'offers');
+
+      if (data.length === 0){
+        addOfferRow(toTbody, prefix);
+        return;
+      }
+
+      data.forEach(x => {
+        const amountName = (prefix === 'store_offers')
+          ? 'store_offers_amount[]'
+          : (prefix === 'public_offers' ? 'public_offers_amount[]' : 'offers_amount[]');
+        const valueName  = (prefix === 'store_offers')
+          ? 'store_offers_value[]'
+          : (prefix === 'public_offers' ? 'public_offers_value[]' : 'offers_value[]');
+
+        const tr = document.createElement("tr");
+        tr.className = "offer-row";
+        tr.setAttribute("data-offer-kind", (toKind === 'store') ? "store" : (toKind === 'public' ? "public" : "default"));
+        tr.innerHTML = `
+          <td><input type="number" step="0.01" min="0" class="form-control" name="${amountName}" value="${(x.amount||"").replace(/"/g,'&quot;')}" placeholder="Amount"></td>
+          <td><input type="text" class="form-control" name="${valueName}" value="${(x.value||"").replace(/"/g,'&quot;')}" placeholder="Value"></td>
+          <td class="text-end"><button type="button" class="btn btn-outline-danger btn-sm remove-offer-btn">&times;</button></td>
+        `;
+        toTbody.appendChild(tr);
+      });
+    }
+
+    function resetCustomerPricingForm(sid){
+      const form = document.getElementById(`customerPricingForm-${sid}`);
+      if (!form) return;
+      form.querySelectorAll('[data-offer-input]').forEach(inp => inp.value = '');
+      const select = form.querySelector('select[name="customer_id"]');
+      if (select) select.value = '';
+    }
+
+    function populateCustomerPricing(sid, customerId, offers){
+      const form = document.getElementById(`customerPricingForm-${sid}`);
+      if (!form) return;
+      resetCustomerPricingForm(sid);
+
+      const select = form.querySelector('select[name="customer_id"]');
+      const input = form.querySelector('input[name="customer_id"]');
+      if (select) select.value = customerId || '';
+      if (input) input.value = customerId || '';
+
+      (offers || []).forEach(offer => {
+        const idx = Number(offer.index);
+        if (!Number.isFinite(idx)) return;
+        const field = form.querySelector(`[data-offer-input][data-offer-index="${idx}"]`);
+        if (field) field.value = Number(offer.total || 0).toFixed(2);
+      });
+    }
+
+    document.addEventListener('click', function(e) {
+      const btn = e.target.closest('[data-populate-customer-pricing]');
+      if (!btn) return;
+
+      let offers = [];
+      try {
+        offers = JSON.parse(btn.dataset.offers || '[]');
+      } catch (err) {
+        offers = [];
+      }
+      populateCustomerPricing(btn.dataset.serviceId || '', btn.dataset.customerId || '', offers);
+    });
+
+    /* filters for customer select/table (kept from your version) */
+    document.addEventListener('input', function(e) {
+      const inp = e.target.closest('[data-filter-select]');
+      if (!inp) return;
+      const sel = document.querySelector(inp.getAttribute('data-filter-select'));
+      if (!sel) return;
+      const q = inp.value.toLowerCase();
+      Array.from(sel.options).forEach(opt => {
+        if (!opt.value) return;
+        const txt = (opt.textContent || '').toLowerCase();
+        opt.hidden = q && !txt.includes(q);
+      });
+      if (!sel.value) {
+        const vis = Array.from(sel.options).find(o => !o.hidden && o.value);
+        if (vis) sel.value = vis.value;
+      }
+    });
+
+    document.addEventListener('input', function(e) {
+      const box = e.target.closest('[data-filter-table]');
+      if (!box) return;
+      const tbl = document.querySelector(box.getAttribute('data-filter-table'));
+      if (!tbl) return;
+      const q = (e.target.value || '').toLowerCase();
+      tbl.querySelectorAll('tbody tr').forEach(tr => {
+        const name = (tr.querySelector('.override-name')?.textContent || '').toLowerCase();
+        const id = (tr.querySelector('.override-id')?.textContent || '').toLowerCase();
+        tr.style.display = (name.includes(q) || id.includes(q)) ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>

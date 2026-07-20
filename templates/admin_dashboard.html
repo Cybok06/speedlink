@@ -1,0 +1,1220 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SpeedLink - Admin Dashboard</title>
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/png" href="{{ url_for('brand_images', filename='logo_for_white_bg.png') }}">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary:#0EA5E9;
+      --secondary:#0A1A2F;
+      --bg:#eef4fb;
+      --bg-accent:#dfefff;
+      --surface:#ffffff;
+      --surface-2:#f8fbff;
+      --surface-3:#edf4fb;
+      --text:#0f172a;
+      --text-soft:#5f6f86;
+      --border:rgba(15, 23, 42, .08);
+      --shadow:0 18px 40px rgba(15, 23, 42, .08);
+      --shadow-soft:0 10px 26px rgba(15, 23, 42, .06);
+      --hero-grad:linear-gradient(135deg, #091a33 0%, #0b4c75 46%, #0ea5e9 100%);
+      --table-head:#eef5fc;
+      --chart-grid:rgba(15, 23, 42, .10);
+      --chart-axis:rgba(15, 23, 42, .68);
+      --card-glow:radial-gradient(circle at top right, rgba(14,165,233,.16), transparent 36%);
+    }
+    html, body { min-height: 100%; }
+    html { color-scheme: light; }
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(14,165,233,.14), transparent 22%),
+        radial-gradient(circle at top right, rgba(245,180,0,.10), transparent 18%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-accent) 100%);
+      color: var(--text);
+      transition: background .28s ease, color .28s ease;
+    }
+    .text-primary { color: var(--primary) !important; }
+    .text-muted { color: var(--text-soft) !important; }
+    .kpi { font-variant-numeric: tabular-nums; }
+    .card h6 { margin-bottom: .25rem; }
+    .chart-wrap { position: relative; width: 100%; height: 360px; }
+    @media (min-width: 1400px) { .chart-wrap { height: 420px; } }
+    .table td, .table th { vertical-align: middle; }
+    .customer-content { color: var(--text); }
+    .dashboard-shell { max-width: 1680px; margin: 0 auto; }
+    .dashboard-hero {
+      position: relative;
+      overflow: hidden;
+      background: var(--hero-grad);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 28px;
+      padding: 1.5rem;
+      box-shadow: 0 24px 50px rgba(8, 17, 31, .16);
+      color: #f8fbff;
+    }
+    .dashboard-hero::after {
+      content:"";
+      position:absolute;
+      width:240px;
+      height:240px;
+      right:-70px;
+      top:-80px;
+      border-radius:50%;
+      background:rgba(255,255,255,.08);
+      filter:blur(1px);
+    }
+    .dashboard-kicker {
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      padding:.45rem .8rem;
+      border-radius:999px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.14);
+      font-size:.8rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .dashboard-hero-meta {
+      display:flex;
+      gap:.75rem;
+      flex-wrap:wrap;
+      color:rgba(248,251,255,.82);
+      font-size:.92rem;
+    }
+    .dashboard-hero-meta span {
+      padding:.45rem .7rem;
+      border-radius:999px;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .card,
+    .modal-content {
+      border:1px solid var(--border);
+      background:
+        var(--card-glow),
+        linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+      box-shadow: var(--shadow);
+      transition: background .28s ease, border-color .28s ease, box-shadow .28s ease, transform .2s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+    }
+    .card-header,
+    .modal-header,
+    .modal-footer {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .modal-body,
+    .modal-title,
+    .modal-content .text-muted,
+    .modal-content .small {
+      color: var(--text);
+    }
+    .table {
+      --bs-table-bg: transparent;
+      --bs-table-color: var(--text);
+      --bs-table-border-color: var(--border);
+      --bs-table-striped-color: var(--text);
+      --bs-table-striped-bg: rgba(148, 163, 184, .06);
+      --bs-table-hover-color: var(--text);
+      --bs-table-hover-bg: rgba(14, 165, 233, .06);
+    }
+    .table-light,
+    .table thead {
+      --bs-table-bg: var(--table-head);
+      --bs-table-color: var(--text);
+    }
+    .form-control,
+    .form-select {
+      background-color: var(--surface-3);
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .form-control::placeholder { color: var(--text-soft); }
+    .form-control:focus,
+    .form-select:focus {
+      background-color: var(--surface-2);
+      border-color: rgba(14,165,233,.45);
+      color: var(--text);
+      box-shadow: 0 0 0 .2rem rgba(14,165,233,.16);
+    }
+    .btn-outline-secondary,
+    .btn-light {
+      border-color: var(--border);
+      color: var(--text);
+      background: var(--surface-2);
+    }
+    .btn-outline-secondary:hover,
+    .btn-light:hover {
+      background: var(--surface-3);
+      color: var(--text);
+      border-color: rgba(14,165,233,.35);
+    }
+    .btn-close {
+      filter: var(--btn-close-filter, none);
+    }
+    .badge.text-bg-light,
+    .badge.bg-light,
+    .text-bg-light {
+      background: var(--surface-2) !important;
+      color: var(--text) !important;
+      border: 1px solid var(--border);
+    }
+    .card-icon {
+      width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
+      border-radius: .75rem; background: rgba(13,110,253,.12);
+    }
+    .card-icon.success { background: rgba(25,135,84,.12); }
+    .card-icon.warning { background: rgba(255,193,7,.15); }
+    .card-icon.info    { background: rgba(13,202,240,.12); }
+    .card-icon.afa { background: rgba(13,110,253,.12); }
+    .metric-card--sky {
+      background: linear-gradient(135deg, rgba(232,244,255,.96), rgba(246,251,255,.96)) !important;
+    }
+    .metric-card--amber {
+      background: linear-gradient(135deg, rgba(255,247,230,.98), rgba(255,253,247,.98)) !important;
+    }
+    .metric-card--ice {
+      background: linear-gradient(135deg, rgba(224,242,255,.98), rgba(245,251,255,.98)) !important;
+    }
+    /* Blink / glow for the KPI count */
+    .blink { animation: kpi-blink 1.2s steps(2, start) infinite; }
+    @keyframes kpi-blink { 50% { opacity: .35; } }
+
+    /* Subtle bump when the number updates */
+    .bump { animation: kpi-bump .6s ease-out; }
+    @keyframes kpi-bump {
+      0% { transform: scale(1); }
+      35% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    /* Profit trend chip */
+    .trend-chip { font-weight: 600; padding: .2rem .5rem; border-radius: 999px; font-size: .85rem; }
+    .trend-up { color: #155724; background: rgba(25,135,84,.15); }
+    .trend-down { color: #721c24; background: rgba(220,53,69,.15); }
+    .trend-flat { color: #084298; background: rgba(13,110,253,.15); }
+
+    /* Section headings */
+    .section-title { font-size: .9rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-soft); margin: .25rem 0 .5rem; }
+
+    /* Withdraw request modal helpers */
+    .pill {
+      display:inline-flex; align-items:center; gap:.4rem;
+      padding:.15rem .55rem; border-radius:999px; font-size:.78rem; font-weight:600;
+      border:1px solid rgba(0,0,0,.06);
+      white-space:nowrap;
+    }
+    .pill-pending { background: rgba(255,193,7,.18); color:#8a6d00; }
+    .pill-paid { background: rgba(25,135,84,.15); color:#146c43; }
+    .pill-rejected { background: rgba(220,53,69,.12); color:#b02a37; }
+    .pill-other { background: rgba(13,110,253,.10); color:#084298; }
+
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    /* Wallet mini cards (embedded in Today's Profit card) */
+    .wallet-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: .75rem;
+      margin-top: .75rem;
+      margin-bottom: .75rem;
+    }
+    @media (max-width: 767.98px) {
+      .dashboard-hero { padding: 1.15rem; border-radius: 22px; }
+    }
+  </style>
+</head>
+<body class="admin-dashboard-page">
+  {% include 'admin_sidebar.html' %}
+
+  <div class="customer-content">
+    <div class="container-fluid dashboard-shell">
+
+      <!-- Header -->
+      <div class="dashboard-hero mb-4">
+        <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+          <div>
+            <div class="dashboard-kicker mb-3">
+              <i class="bi bi-grid-1x2-fill"></i>
+              <span>Control Center</span>
+            </div>
+            <h3 class="mb-2">Admin Dashboard</h3>
+          </div>
+        </div>
+      </div>
+
+     
+      
+ <!-- ========== SECTION: Today's Profit + 6-day chart ========== -->
+      <div class="row g-3 mb-4">
+        <div class="col-12">
+          <div class="section-title">Today & Recent Trend</div>
+        </div>
+
+        <!-- Today's Profit + Statement -->
+        <div class="col-12 col-xxl-5">
+          <div class="card shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6 class="text-muted mb-0">Today's Profit</h6>
+                <span class="card-icon success"><i class="bi bi-graph-up-arrow text-success"></i></span>
+              </div>
+              <div class="display-5 kpi mt-2">
+                <span class="ghs" data-amt="{{ (today_profit or 0)|float }}">GHS 0.00</span>
+              </div>
+              <div class="small text-muted mt-2">
+                Yesterday: <span class="ghs" data-amt="{{ (yesterday_profit or 0)|float }}">GHS 0.00</span>
+                <span class="ms-2">
+                  {% set trend_class = 'trend-flat' %}
+                  {% if profit_trend == 'up' %}{% set trend_class = 'trend-up' %}{% endif %}
+                  {% if profit_trend == 'down' %}{% set trend_class = 'trend-down' %}{% endif %}
+                  <span class="trend-chip {{ trend_class }}">
+                    {% if profit_trend == 'up' %}
+                      +{{ profit_change_pct or 0 }}%
+                    {% elif profit_trend == 'down' %}
+                      -{{ (profit_change_pct or 0)|abs }}%
+                    {% else %}
+                      0%
+                    {% endif %}
+                  </span>
+                </span>
+              </div>
+
+              <div class="mt-2">
+                <small class="text-muted">{{ profit_statement }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6-day Profit Chart -->
+        <div class="col-12 col-xxl-7">
+          <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span class="fw-semibold">Profit (Last 5 Days + Today)</span>
+            </div>
+            <div class="card-body">
+              {% if daily_profit_values and daily_profit_values|length > 0 %}
+                <div class="chart-wrap">
+                  <canvas id="dailyProfitChart" aria-label="Daily profit chart" role="img"></canvas>
+                </div>
+              {% else %}
+                <div class="text-center text-muted py-5">
+                  <div class="mb-2">No profit data yet.</div>
+                  <small>As orders accrue, this chart will populate.</small>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+<!-- ========== SECTION: Core KPIs (organized grid) ========== -->
+      <div class="row g-3 mb-4">
+        <div class="col-12">
+          <div class="section-title">Core KPIs</div>
+        </div>
+
+        <!-- Row A -->
+        <div class="col-12 col-sm-6 col-xl-3">
+          <a href="{{ url_for('admin_customers.view_customers') }}" class="text-decoration-none text-reset">
+            <div class="card shadow-sm h-100">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="text-muted mb-0">Total Customers</h6>
+                  <span class="card-icon"><i class="bi bi-people-fill text-primary"></i></span>
+                </div>
+                <div class="display-6 kpi mt-2">{{ total_customers or 0 }}</div>
+                <div class="small mt-2">
+                  <a class="badge text-bg-danger text-decoration-none"
+                     href="{{ url_for('admin_customers.view_customers') }}?status=blocked">
+                    Blocked: {{ blocked_customers or 0 }}
+                  </a>
+                  <a class="badge text-bg-success ms-2 text-decoration-none"
+                     href="{{ url_for('admin_customers.view_customers') }}?status=active">
+                    Active: {{ active_customers or 0 }}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6 class="text-muted mb-0">Total Orders</h6>
+                <span class="card-icon"><i class="bi bi-bag-check-fill text-primary"></i></span>
+              </div>
+              <div class="display-6 kpi mt-2">{{ total_orders or 0 }}</div>
+              <div class="small text-muted">All-time orders across customers</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6 class="text-muted mb-0">Total Amount</h6>
+                <span class="card-icon info"><i class="bi bi-currency-exchange text-info"></i></span>
+              </div>
+              <div class="display-6 kpi mt-2">
+                <span class="ghs" data-amt="{{ (sum_total_amount or 0)|float }}">GHS 0.00</span>
+              </div>
+              <div class="small text-muted">Sum of order totals</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6 class="text-muted mb-0">Total Charged</h6>
+                <span class="card-icon warning"><i class="bi bi-credit-card-2-front text-warning"></i></span>
+              </div>
+              <div class="display-6 kpi mt-2">
+                <span class="ghs" data-amt="{{ (sum_charged_amount or 0)|float }}">GHS 0.00</span>
+              </div>
+              <div class="small text-muted">What customers actually paid</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row B -->
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6 class="text-muted mb-0">Total Profit</h6>
+                <span class="card-icon success"><i class="bi bi-graph-up-arrow text-success"></i></span>
+              </div>
+              <div class="display-6 kpi mt-2">
+                <span class="ghs" data-amt="{{ (sum_profit_amount or 0)|float }}">GHS 0.00</span>
+              </div>
+              <div class="small text-muted">Cumulative profit from all orders</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <a href="{{ url_for('admin_transactions.admin_view_transactions') }}" class="text-decoration-none text-reset">
+            <div class="card h-100 border-0 shadow-lg metric-card--sky">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="text-muted mb-0">Transactions</h6>
+                  <span class="card-icon" style="background: rgba(13,110,253,.12);">
+                    <i class="bi bi-cash-coin text-primary fs-4"></i>
+                  </span>
+                </div>
+                <div class="display-6 kpi mt-2 fw-bold">
+                  {{ txn_total_count if txn_total_count is defined else 0 }}
+                </div>
+                <div class="small mt-2 text-muted">
+                  Today: <strong>{{ txn_today_count if txn_today_count is defined else 0 }}</strong>
+                  <span class="d-block d-sm-inline ms-sm-2">
+                    · Sum: <span class="ghs" data-amt="{{ (txn_total_amount or 0)|float }}">GHS 0.00</span>
+                    (Today <span class="ghs" data-amt="{{ (txn_today_amount or 0)|float }}">GHS 0.00</span>)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- NEW CARD: Withdrawal Requests -->
+        <div class="col-12 col-sm-6 col-xl-3">
+          <button type="button" class="w-100 text-start p-0 border-0 bg-transparent" id="btnOpenWithdrawRequests">
+            <div class="card h-100 border-0 shadow-lg metric-card--amber">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="text-muted mb-0">Withdrawal Requests</h6>
+                  <span class="card-icon warning">
+                    <i class="bi bi-cash-stack text-warning fs-4"></i>
+                  </span>
+                </div>
+
+                <div class="display-6 kpi mt-2 fw-bold">
+                  <span id="wdreq-count"
+                        class="{% if (withdraw_requests_pending or 0) > 0 %}blink{% endif %}"
+                        data-val="{{ withdraw_requests_pending or 0 }}">
+                    {{ withdraw_requests_pending or 0 }}
+                  </span>
+                </div>
+
+                <div class="small mt-2 text-muted">
+                  Pending / Processing requests
+                  <span class="d-block">Click to review & update status</span>
+                </div>
+              </div>
+            </div>
+          </button>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <a href="{{ url_for('admin_afa.admin_afa_page') }}" class="text-decoration-none text-reset">
+            <div class="card h-100 border-0 shadow-lg metric-card--ice">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="text-muted mb-0">AFA Registrations</h6>
+                  <span class="card-icon afa">
+                    <i class="bi bi-card-checklist text-primary fs-4"></i>
+                  </span>
+                </div>
+                <div class="display-6 kpi mt-2 fw-bold">
+                  <span id="afa-total" class="blink" data-val="{{ (afa_total or 0) if afa_total is defined else 0 }}">
+                    {{ afa_total if afa_total is defined else 0 }}
+                  </span>
+                </div>
+                <div class="small mt-2 text-muted">
+                  Pending: <span id="afa-pending">{{ afa_pending if afa_pending is defined else 0 }}</span>
+                  · Today: <span id="afa-today">{{ afa_today if afa_today is defined else 0 }}</span>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- User Account Balance (Total) -->
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6 class="text-muted mb-0">User Account Balance (Total)</h6>
+                <span class="card-icon info"><i class="bi bi-wallet2 text-info"></i></span>
+              </div>
+              <div class="display-6 kpi mt-2">
+                <span class="ghs" data-amt="{{ (total_user_balance_amount or 0)|float }}">GHS 0.00</span>
+              </div>
+              <div class="small text-muted">
+                Wallets: {{ balance_doc_count or 0 }} &middot; Positive: {{ positive_balance_count or 0 }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ========== SECTION: Wallet Flows ========== -->
+      <div class="row g-3 mb-4">
+        <div class="col-12">
+          <div class="section-title">Wallet Flows</div>
+        </div>
+        <div class="col-12 col-xxl-8">
+          <a href="{{ url_for('admin_balance.view_balances') }}" class="text-decoration-none text-reset">
+            <div class="card shadow-sm h-100">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="text-muted mb-0">Deposits & Deductions</h6>
+                  <span class="card-icon info"><i class="bi bi-wallet2 text-info"></i></span>
+                </div>
+                <div class="row mt-3">
+                  <div class="col-6">
+                    <div class="small text-muted">Total Deposits</div>
+                    <div class="h4 kpi">
+                      <span class="ghs" data-amt="{{ (deposits_overall or 0)|float }}">GHS 0.00</span>
+                    </div>
+                  </div>
+                  <div class="col-6 text-end">
+                    <div class="small text-muted">Total Deductions</div>
+                    <div class="h4 kpi">
+                      <span class="ghs" data-amt="{{ (withdrawals_overall or 0)|float }}">GHS 0.00</span>
+                    </div>
+                  </div>
+                </div>
+                <hr class="my-3">
+                <div class="row">
+                  <div class="col-6">
+                    <div class="small text-muted">Today's Deposits</div>
+                    <div class="h5 kpi">
+                      <span class="ghs" data-amt="{{ (deposits_today or 0)|float }}">GHS 0.00</span>
+                    </div>
+                  </div>
+                  <div class="col-6 text-end">
+                    <div class="small text-muted">Today's Deductions</div>
+                    <div class="h5 kpi">
+                      <span class="ghs" data-amt="{{ (withdrawals_today or 0)|float }}">GHS 0.00</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="small text-muted mt-2">Click to view balances</div>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-12 col-xxl-4">
+          <div class="card shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6 class="text-muted mb-0">Quick Wallet Snapshot</h6>
+                <span class="card-icon"><i class="bi bi-speedometer2 text-primary"></i></span>
+              </div>
+              <div class="row mt-3">
+                <div class="col-6">
+                  <div class="small text-muted">All Deposits</div>
+                  <div class="h5 kpi"><span class="ghs" data-amt="{{ (deposits_overall or 0)|float }}">GHS 0.00</span></div>
+                </div>
+                <div class="col-6 text-end">
+                  <div class="small text-muted">All Deductions</div>
+                  <div class="h5 kpi"><span class="ghs" data-amt="{{ (withdrawals_overall or 0)|float }}">GHS 0.00</span></div>
+                </div>
+              </div>
+              <hr class="my-2">
+              <div class="small text-muted">Shows cumulative wallet movement across users.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== SECTION: Top Customers & Profit ========== -->
+      <div class="row g-3 mb-4">
+        <div class="col-12">
+          <div class="section-title">Customers</div>
+        </div>
+
+        <div class="col-12 col-xxl-6">
+          <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span class="fw-semibold">Top Customers by Orders</span>
+              <span class="text-muted small">Top 10</span>
+            </div>
+            <div class="card-body">
+              {% if chart_values and chart_values|length > 0 %}
+                <div class="chart-wrap">
+                  <canvas id="ordersBarChart" aria-label="Top customers by orders" role="img"></canvas>
+                </div>
+              {% else %}
+                <div class="text-center text-muted py-5">
+                  <div class="mb-2">No order data yet.</div>
+                  <small>When orders come in, you'll see your top customers here.</small>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-xxl-6">
+          <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span class="fw-semibold">Top Customers by Profit</span>
+              <span class="text-muted small">Top 10</span>
+            </div>
+            <div class="card-body">
+              {% if profit_chart_values and profit_chart_values|length > 0 %}
+                <div class="chart-wrap">
+                  <canvas id="profitBarChart" aria-label="Top customers by profit" role="img"></canvas>
+                </div>
+              {% else %}
+                <div class="text-center text-muted py-5">
+                  <div class="mb-2">No profit data yet.</div>
+                  <small>As profits accrue, this chart will populate.</small>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== SECTION: Agent Sales ========== -->
+      <div class="row g-3 mb-4">
+        <div class="col-12">
+          <div class="section-title">Agents</div>
+        </div>
+
+        <div class="col-12 col-xxl-6">
+          <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span class="fw-semibold">Agent Sales (Top 10)</span>
+              <span class="text-muted small">Accumulative</span>
+            </div>
+            <div class="card-body">
+              {% if agent_sales_values and agent_sales_values|length > 0 %}
+                <div class="chart-wrap">
+                  <canvas id="agentSalesChart" aria-label="Agent sales (cumulative)" role="img"></canvas>
+                </div>
+              {% else %}
+                <div class="text-center text-muted py-5">
+                  <div class="mb-2">No agent sales yet.</div>
+                  <small>As orders come in with agent attribution, this chart will populate.</small>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-xxl-6">
+          <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span class="fw-semibold">Top Agents (Cumulative Sales)</span>
+              <span class="text-muted small">Top 10</span>
+            </div>
+            <div class="card-body">
+              {% if top_agents_rows and top_agents_rows|length %}
+                <div class="table-responsive">
+                  <table class="table table-sm align-middle">
+                    <thead class="table-light">
+                      <tr>
+                        <th style="width:40px;">#</th>
+                        <th>Agent</th>
+                        <th class="text-end">Sales (GHS)</th>
+                        <th class="text-end">Lines</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for r in top_agents_rows %}
+                        <tr>
+                          <td>{{ loop.index }}</td>
+                          <td title="{{ r.agent_id }}">{{ r.agent }}</td>
+                          <td class="text-end">
+                            <span class="ghs" data-amt="{{ (r.sales or 0)|float }}">GHS 0.00</span>
+                          </td>
+                          <td class="text-end">{{ r.lines }}</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <div class="text-center text-muted py-5">
+                  <div class="mb-2">No agent data to rank yet.</div>
+                  <small>When agent-attributed lines exist, this list will update.</small>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== SECTION: Top Offers Purchased ========== -->
+      <div class="row g-3 mb-4">
+        <div class="col-12">
+          <div class="section-title">Products & Offers</div>
+        </div>
+        <div class="col-12">
+          <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span class="fw-semibold">Top Offers Purchased</span>
+              <span class="text-muted small">Top 10</span>
+            </div>
+            <div class="card-body">
+              {% if top_offers and top_offers|length %}
+                <div class="table-responsive">
+                  <table class="table table-sm align-middle">
+                    <thead class="table-light">
+                      <tr>
+                        <th style="width:40px;">#</th>
+                        <th>Service</th>
+                        <th>Offer</th>
+                        <th class="text-end">Purchases</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for row in top_offers %}
+                        <tr>
+                          <td>{{ loop.index }}</td>
+                          <td>{{ row.service }}</td>
+                          <td>{{ row.offer }}</td>
+                          <td class="text-end">{{ row.count }}</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <div class="text-center text-muted py-5">
+                  <div class="mb-2">No purchases to rank yet.</div>
+                  <small>Once completed orders exist, this list will update.</small>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- JSON blobs -->
+      <script id="orders-chart-data" type="application/json">
+        {{ {'labels': chart_labels or [], 'values': chart_values or []} | tojson }}
+      </script>
+      <script id="profit-chart-data" type="application/json">
+        {{ {'labels': profit_chart_labels or [], 'values': profit_chart_values or []} | tojson }}
+      </script>
+      <script id="daily-profit-data" type="application/json">
+        {{ {'labels': daily_profit_labels or [], 'values': daily_profit_values or []} | tojson }}
+      </script>
+      <script id="agent-sales-data" type="application/json">
+        {{ {'labels': agent_sales_labels or [], 'values': agent_sales_values or []} | tojson }}
+      </script>
+
+    </div>
+  </div>
+
+  <!-- Withdrawal Requests Modal -->
+  <div class="modal fade" id="withdrawRequestsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div>
+            <h5 class="modal-title mb-0">
+              <i class="bi bi-cash-stack text-warning me-1"></i>
+              Withdrawal Requests
+            </h5>
+            <div class="small text-muted">Update status: <strong>Paid</strong>, <strong>Processing</strong>, <strong>Cancelled</strong></div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+              <select class="form-select form-select-sm" id="wdFilterStatus" style="max-width:220px;">
+                <option value="pending" selected>Pending / Processing</option>
+                <option value="">All</option>
+                <option value="paid">Paid</option>
+                <option value="rejected">Cancelled</option>
+              </select>
+
+              <input type="search" class="form-control form-control-sm" id="wdFilterQ"
+                     placeholder="Search reference..." style="max-width:260px;">
+            </div>
+
+            <button class="btn btn-outline-primary btn-sm" id="wdBtnRefresh" type="button">
+              <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th style="width:180px;">Reference</th>
+                  <th style="width:160px;">Store</th>
+                  <th style="width:140px;">Method</th>
+                  <th class="text-end" style="width:140px;">Amount</th>
+                  <th style="width:150px;">Status</th>
+                  <th style="width:170px;">Created</th>
+                  <th style="width:240px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="wdRows">
+                <tr>
+                  <td colspan="7" class="text-muted small">
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Loading withdrawal requests...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="small text-muted mt-2">
+            Note: UI labels map to backend statuses:
+            <span class="mono">Processing -> pending</span>,
+            <span class="mono">Cancelled -> rejected</span>,
+            <span class="mono">Paid -> paid</span>.
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    const chartRegistry = {};
+
+    function dashboardThemeColors(){
+      const styles = getComputedStyle(document.documentElement);
+      return {
+        text: styles.getPropertyValue('--text').trim() || '#0f172a',
+        textSoft: styles.getPropertyValue('--text-soft').trim() || '#5f6f86',
+        grid: styles.getPropertyValue('--chart-grid').trim() || 'rgba(15,23,42,.1)',
+        primary: styles.getPropertyValue('--primary').trim() || '#0EA5E9',
+        border: styles.getPropertyValue('--border').trim() || 'rgba(15,23,42,.08)',
+      };
+    }
+
+    // Currency formatter available to all charts
+    const fmtMoney = (n) => 'GHS ' + Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function animateMoney(el, target, duration = 700){
+      if (!el) return;
+      const end = Number(target) || 0;
+      if (prefersReducedMotion) { el.textContent = fmtMoney(end); return; }
+      const start = 0;
+      const startTs = performance.now();
+      function step(ts){
+        const p = Math.min((ts - startTs) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        const val = start + (end - start) * eased;
+        el.textContent = fmtMoney(val);
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    // Format any .ghs amounts as "GHS 12,345.00"
+    document.querySelectorAll('.ghs').forEach(el => {
+      const raw = (el.getAttribute('data-amt') || '').toString().replace(/[^\d.-]/g,'');
+      const n = parseFloat(raw);
+      if (!isNaN(n)) { el.textContent = fmtMoney(n); }
+    });
+
+    function commonChartOptions(valueFormatter){
+      const colors = dashboardThemeColors();
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            ticks: { maxRotation: 45, minRotation: 0, autoSkip: true, color: colors.textSoft },
+            grid: { color: colors.grid, drawBorder: false }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0,
+              color: colors.textSoft,
+              callback: (v) => valueFormatter ? valueFormatter(v) : v
+            },
+            grid: { color: colors.grid, drawBorder: false }
+          }
+        },
+        plugins: {
+          legend: { display: false, labels: { color: colors.text } },
+          tooltip: {
+            backgroundColor: '#ffffff',
+            titleColor: colors.text,
+            bodyColor: colors.text,
+            borderColor: colors.border,
+            borderWidth: 1,
+            callbacks: {
+              label: (ctx) => {
+                const v = ctx.parsed.y;
+                return valueFormatter ? `${ctx.dataset.label}: ${valueFormatter(v)}` : `${ctx.dataset.label}: ${v}`;
+              }
+            }
+          }
+        }
+      };
+    }
+
+    function renderBarChart(canvasId, blobId, labelText, valueFormatter) {
+      const blob = document.getElementById(blobId);
+      if (!blob) return;
+      let data;
+      try { data = JSON.parse(blob.textContent || '{}'); } catch { data = {}; }
+      const labels = Array.isArray(data.labels) ? data.labels : [];
+      const values = Array.isArray(data.values) ? data.values : [];
+      if (!values.length) return;
+
+      const ctx = document.getElementById(canvasId);
+      if (!ctx) return;
+
+      if (chartRegistry[canvasId]) {
+        chartRegistry[canvasId].destroy();
+      }
+
+      const colors = dashboardThemeColors();
+
+      chartRegistry[canvasId] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: labelText,
+            data: values,
+            borderWidth: 1,
+            borderRadius: 10,
+            maxBarThickness: 34,
+            backgroundColor: 'rgba(14, 165, 233, .74)',
+            borderColor: colors.primary
+          }]
+        },
+        options: commonChartOptions(valueFormatter)
+      });
+    }
+
+    // Orders chart
+    renderBarChart('ordersBarChart', 'orders-chart-data', 'Orders');
+    // Profit chart (format y-axis as currency)
+    renderBarChart('profitBarChart', 'profit-chart-data', 'Profit', fmtMoney);
+    // Agent sales chart (currency)
+    renderBarChart('agentSalesChart', 'agent-sales-data', 'Sales', fmtMoney);
+
+    function renderDailyProfitChart(){
+      const blob = document.getElementById('daily-profit-data');
+      if (!blob) return;
+      let data;
+      try { data = JSON.parse(blob.textContent || '{}'); } catch { data = {}; }
+      const labels = Array.isArray(data.labels) ? data.labels : [];
+      const values = Array.isArray(data.values) ? data.values : [];
+      if (!values.length) return;
+
+      const ctx = document.getElementById('dailyProfitChart');
+      if (!ctx) return;
+
+      if (chartRegistry.dailyProfitChart) {
+        chartRegistry.dailyProfitChart.destroy();
+      }
+
+      const colors = dashboardThemeColors();
+
+      chartRegistry.dailyProfitChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Daily Profit',
+            data: values,
+            fill: true,
+            tension: 0.34,
+            borderWidth: 3,
+            borderColor: colors.primary,
+            pointBackgroundColor: colors.primary,
+            pointBorderColor: '#ffffff',
+            pointHoverRadius: 5,
+            backgroundColor: 'rgba(14, 165, 233, .12)'
+          }]
+        },
+        options: {
+          ...commonChartOptions(fmtMoney),
+          scales: {
+            x: {
+              ticks: { color: colors.textSoft },
+              grid: { color: colors.grid, drawBorder: false }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { color: colors.textSoft, callback: (v) => fmtMoney(v) },
+              grid: { color: colors.grid, drawBorder: false }
+            }
+          },
+          plugins: {
+            ...commonChartOptions(fmtMoney).plugins,
+            tooltip: {
+              ...commonChartOptions(fmtMoney).plugins.tooltip,
+              callbacks: { label: (ctx) => `Profit: ${fmtMoney(ctx.parsed.y)}` }
+            }
+          }
+        }
+      });
+    }
+
+    // Daily profit line chart
+    renderDailyProfitChart();
+
+    function rerenderDashboardCharts(){
+      renderBarChart('ordersBarChart', 'orders-chart-data', 'Orders');
+      renderBarChart('profitBarChart', 'profit-chart-data', 'Profit', fmtMoney);
+      renderBarChart('agentSalesChart', 'agent-sales-data', 'Sales', fmtMoney);
+      renderDailyProfitChart();
+    }
+
+    // ================================
+    // Withdrawal Requests Modal logic
+    // ================================
+    const wdModalEl = document.getElementById('withdrawRequestsModal');
+    const wdModal = wdModalEl ? bootstrap.Modal.getOrCreateInstance(wdModalEl) : null;
+
+    const wdRows = document.getElementById('wdRows');
+    const wdBtnOpen = document.getElementById('btnOpenWithdrawRequests');
+    const wdBtnRefresh = document.getElementById('wdBtnRefresh');
+    const wdFilterStatus = document.getElementById('wdFilterStatus');
+    const wdFilterQ = document.getElementById('wdFilterQ');
+
+    // API endpoints come from your customer_store_bp
+    const WD_LIST_URL = "/api/admin/store/withdraw/requests";
+    const WD_UPDATE_URL_PREFIX = "/api/admin/store/withdraw/"; // + <id> + "/status"
+
+    function pillStatusBackend(st){
+      const s = String(st || '').toLowerCase();
+      if (s === 'pending') return '<span class="pill pill-pending"><i class="bi bi-hourglass-split"></i> pending</span>';
+      if (s === 'paid') return '<span class="pill pill-paid"><i class="bi bi-check2-circle"></i> paid</span>';
+      if (s === 'rejected') return '<span class="pill pill-rejected"><i class="bi bi-x-circle"></i> cancelled</span>';
+      return '<span class="pill pill-other"><i class="bi bi-info-circle"></i> ' + (s || '-') + '</span>';
+    }
+
+    function methodChip(m){
+      const s = String(m || '').toLowerCase();
+      if (s === 'momo') return '<span class="badge text-bg-light border"><i class="bi bi-phone me-1"></i>MoMo</span>';
+      if (s === 'wallet') return '<span class="badge text-bg-light border"><i class="bi bi-wallet2 me-1"></i>Wallet</span>';
+      return '<span class="badge text-bg-light border">' + (s || '-') + '</span>';
+    }
+
+    function toBackendStatus(uiStatus){
+      // UI: Paid / Processing / Cancelled
+      const s = String(uiStatus || '').toLowerCase();
+      if (s === 'paid') return 'paid';
+      if (s === 'processing') return 'pending';
+      if (s === 'cancelled') return 'rejected';
+      return 'pending';
+    }
+
+    function formatDate(s){
+      return s ? s : '-';
+    }
+
+    async function loadWithdrawRequests(){
+      if (!wdRows) return;
+
+      const status = (wdFilterStatus && wdFilterStatus.value != null) ? wdFilterStatus.value : 'pending';
+      const q = (wdFilterQ && wdFilterQ.value) ? wdFilterQ.value.trim() : '';
+
+      const url = new URL(WD_LIST_URL, window.location.origin);
+      url.searchParams.set('limit', '100');
+      if (status) url.searchParams.set('status', status);
+      if (q) url.searchParams.set('q', q);
+
+      wdRows.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-muted small">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Loading withdrawal requests...
+          </td>
+        </tr>
+      `;
+
+      try{
+        const r = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
+        const j = await r.json();
+
+        if (!r.ok || !j.success){
+          wdRows.innerHTML = `<tr><td colspan="7" class="text-danger small">${(j && j.message) ? j.message : 'Failed to load.'}</td></tr>`;
+          return;
+        }
+
+        const items = j.items || [];
+        if (!items.length){
+          wdRows.innerHTML = `<tr><td colspan="7" class="text-muted small">No withdrawal requests found.</td></tr>`;
+          return;
+        }
+
+        wdRows.innerHTML = items.map(it => {
+          const id = it.id;
+          const ref = it.reference || '-';
+          const slug = it.store_slug || '-';
+          const method = methodChip(it.method);
+          const amt = fmtMoney(Number(it.amount || 0));
+          const statusPill = pillStatusBackend(it.status);
+          const created = formatDate(it.created_at);
+          const disabled = (String(it.status||'').toLowerCase() === 'paid') ? 'disabled' : '';
+
+          return `
+            <tr data-id="${id}">
+              <td class="mono">${ref}</td>
+              <td>${slug}</td>
+              <td>${method}</td>
+              <td class="text-end">${amt}</td>
+              <td>${statusPill}</td>
+              <td>${created}</td>
+              <td>
+                <div class="d-flex gap-2 flex-wrap">
+                  <select class="form-select form-select-sm wd-status" style="max-width:170px;" ${disabled}>
+                    <option value="Processing" ${(String(it.status).toLowerCase()==='pending')?'selected':''}>Processing</option>
+                    <option value="Paid" ${(String(it.status).toLowerCase()==='paid')?'selected':''}>Paid</option>
+                    <option value="Cancelled" ${(String(it.status).toLowerCase()==='rejected')?'selected':''}>Cancelled</option>
+                  </select>
+
+                  <button type="button" class="btn btn-primary btn-sm wd-save" ${disabled}>
+                    <i class="bi bi-save2 me-1"></i> Update
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+      }catch(e){
+        wdRows.innerHTML = `<tr><td colspan="7" class="text-danger small">Network error loading requests.</td></tr>`;
+      }
+    }
+
+    async function updateWithdrawRequest(rowEl){
+      const id = rowEl.getAttribute('data-id');
+      const sel = rowEl.querySelector('.wd-status');
+      const btn = rowEl.querySelector('.wd-save');
+
+      if (!id || !sel || !btn) return;
+
+      const uiStatus = sel.value;
+      const backendStatus = toBackendStatus(uiStatus);
+
+      btn.disabled = true;
+      const oldHtml = btn.innerHTML;
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Saving...`;
+
+      try{
+        const r = await fetch(WD_UPDATE_URL_PREFIX + encodeURIComponent(id) + "/status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify({ status: backendStatus, note: "" })
+        });
+
+        const j = await r.json();
+        if (!r.ok || !j.success){
+          alert((j && j.message) ? j.message : "Failed to update status.");
+        } else {
+          // refresh list (keeps filters)
+          await loadWithdrawRequests();
+          // bump KPI count visually (best-effort)
+          const kpi = document.getElementById('wdreq-count');
+          if (kpi && kpi.classList) {
+            kpi.classList.remove('bump'); void kpi.offsetWidth; kpi.classList.add('bump');
+          }
+        }
+      }catch(e){
+        alert("Network error updating request.");
+      }finally{
+        btn.disabled = false;
+        btn.innerHTML = oldHtml;
+      }
+    }
+
+    if (wdBtnOpen && wdModal){
+      wdBtnOpen.addEventListener('click', async () => {
+        wdModal.show();
+        await loadWithdrawRequests();
+      });
+    }
+
+    if (wdBtnRefresh){
+      wdBtnRefresh.addEventListener('click', loadWithdrawRequests);
+    }
+    if (wdFilterStatus){
+      wdFilterStatus.addEventListener('change', loadWithdrawRequests);
+    }
+    if (wdFilterQ){
+      let t = null;
+      wdFilterQ.addEventListener('input', () => {
+        clearTimeout(t);
+        t = setTimeout(loadWithdrawRequests, 250);
+      });
+    }
+
+    // delegate save clicks
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.wd-save');
+      if (!btn) return;
+      const row = btn.closest('tr[data-id]');
+      if (!row) return;
+      updateWithdrawRequest(row);
+    });
+  </script>
+</body>
+</html>
