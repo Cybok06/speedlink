@@ -201,7 +201,7 @@ def _build_external_client_reference(order_id: str, idx: int) -> str:
 
 
 def _external_api_config() -> tuple[str, str, int]:
-    base_url = (os.getenv("CAMPUS_DATA_BASE_URL") or "https://campus-data-2i8o.onrender.com").strip().rstrip("/")
+    base_url = (os.getenv("CAMPUS_DATA_BASE_URL") or "https://campus-data-guce.onrender.com").strip().rstrip("/")
     api_key = (os.getenv("CAMPUS_DATA_API_KEY") or "campapi_7zp-YCnATNWD6Q0HcZzvV6osrrb1sbo9Tk5Ki0QG-PM").strip()
     timeout = int((os.getenv("CAMPUS_DATA_TIMEOUT") or "30").strip() or "30")
     return base_url, api_key, timeout
