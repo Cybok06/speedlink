@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Subscription · {{ COMPANY_NAME }}</title>
+  <style>body{background:#f4f7fc;color:#142443}.billing-wrap{max-width:940px;margin:30px auto}.billing-card{background:white;border:1px solid #e3e9f2;border-radius:20px;padding:clamp(20px,4vw,36px);box-shadow:0 12px 35px #10265308}.price{font-size:3rem;font-weight:750}.muted{color:#64748b}.billing-table{overflow-x:auto}</style>
+</head>
+<body>
+{% include 'customer_sidebar.html' %}
+<main class="customer-content"><div class="billing-wrap">
+  <p class="text-primary fw-semibold mb-1">YOUR AGENT ACCOUNT</p>
+  <h1 class="mb-2">Subscription</h1>
+  <p class="muted mb-4">Keep your dashboard and online store available with one monthly payment.</p>
+  {% for category, message in get_flashed_messages(with_categories=true) %}
+    <div class="alert alert-{{ category }}" role="status">{{ message }}</div>
+  {% endfor %}
+  <section class="billing-card mb-4">
+    <div class="d-flex justify-content-between align-items-center gap-3"><h2 class="h5">Monthly agent plan</h2><span class="badge rounded-pill {{ 'text-bg-success' if active else 'text-bg-warning' }}">{{ billing_state.label }}</span></div>
+    <p class="mb-3"><span class="price">GH₵15</span><span class="muted"> / month</span></p>
+    {% if active %}
+      <p>Next payment due <strong>{{ user.subscription_expires_at.strftime('%d %b %Y at %H:%M') }} GMT</strong>.</p>
+      <p class="muted">Renew early to add one month to your current expiry date.</p>
+    {% elif billing_state.in_grace %}
+      <p>Your payment is due. Your <strong>24-hour grace period</strong> ends <strong>{{ billing_state.grace_end.strftime('%d %b %Y at %H:%M') }} GMT</strong>.</p>
+      <p class="muted">Your dashboard and store remain available during this period. Pay now to avoid interruption.</p>
+    {% else %}
+      {% if user.subscription_expires_at %}<p>Your subscription expired on {{ user.subscription_expires_at.strftime('%d %b %Y') }}.</p>{% endif %}
+      <p>Pay now to activate your dashboard and store for one calendar month.</p>
+    {% endif %}
+    <form action="{{ url_for('subscription.pay') }}" method="post" class="d-inline">
+      <input type="hidden" name="csrf_token" value="{{ session.subscription_csrf }}">
+      <button class="btn btn-primary px-4 py-2" type="submit">{{ 'Renew now' if active else 'Pay now' }} · GH₵15</button>
+    </form>
+    {% if billing_state.allowed %}<a class="btn btn-outline-primary ms-2" href="{{ url_for('customer_dashboard.customer_dashboard') }}">Open dashboard</a>{% endif %}
+    <p class="small muted mt-3 mb-0">Secure payment through Paystack. Renew manually each month; no automatic charges.</p>
+  </section>
+  <section class="billing-card"><h2 class="h5 mb-3">Payment history</h2>
+    <p class="small muted">Already paid? Check your payment below to restore access without paying twice.</p>
+    <div class="billing-table"><table class="table align-middle"><thead><tr><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>
+    {% for payment in history %}<tr><td>{{ payment.created_at.strftime('%d %b %Y') }}<small class="d-block muted">{{ payment._id }}</small></td><td class="text-nowrap">GH₵15.00</td><td>{{ 'Paid' if payment.status == 'success' else ('Awaiting confirmation' if payment.status == 'pending' else payment.status|capitalize) }}</td><td>
+      {% if payment.status != 'success' %}<form method="post" action="{{ url_for('subscription.check') }}"><input type="hidden" name="csrf_token" value="{{ session.subscription_csrf }}"><input type="hidden" name="reference" value="{{ payment._id }}"><button class="btn btn-sm btn-outline-primary text-nowrap">Check payment</button></form>{% else %}<span class="text-success">Confirmed</span>{% endif %}
+    </td></tr>{% else %}<tr><td colspan="4" class="muted py-4">Your subscription payments will appear here.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+</div></main>
+<script>document.querySelectorAll('main form').forEach(form=>form.addEventListener('submit',()=>{const button=form.querySelector('button');button.disabled=true;button.textContent='Please wait…';}));</script>
+</body></html>
