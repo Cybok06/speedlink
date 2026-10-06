@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SpeedLink - Provider</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="{{ url_for('brand_images', filename='logo_for_white_bg.png') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <style>
+    :root{
+      --ink:#0a1a2f;
+      --ink-soft:#24364c;
+      --sky:#1194d6;
+      --sky-deep:#0b6ea3;
+      --aqua:#8ae0ff;
+      --bg:#edf4fb;
+      --panel:#ffffff;
+      --stroke:#d6e2ee;
+      --muted:#687b91;
+      --ok:#16a34a;
+      --warn:#d97706;
+      --danger:#dc2626;
+    }
+    body{
+      background:
+        radial-gradient(900px 420px at 12% -5%, rgba(17,148,214,.12), transparent 60%),
+        radial-gradient(700px 320px at 100% 0%, rgba(10,26,47,.10), transparent 52%),
+        linear-gradient(180deg,#f7fbff 0%, var(--bg) 100%);
+    }
+    .provider-shell{
+      padding:1.3rem 0 2rem;
+    }
+    .provider-hero{
+      position:relative;
+      overflow:hidden;
+      border-radius:28px;
+      padding:1.8rem;
+      color:#fff;
+      background:
+        radial-gradient(circle at 85% 15%, rgba(138,224,255,.28), transparent 16%),
+        radial-gradient(circle at 78% 70%, rgba(255,255,255,.08), transparent 20%),
+        linear-gradient(135deg,#071a31 0%, #0d3159 42%, #1194d6 100%);
+      box-shadow:0 24px 50px rgba(10,26,47,.18);
+    }
+    .provider-hero::after{
+      content:"";
+      position:absolute;
+      inset:auto -5% -35% auto;
+      width:240px;
+      height:240px;
+      border-radius:50%;
+      background:rgba(255,255,255,.07);
+      filter:blur(2px);
+    }
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:.55rem;
+      padding:.45rem .82rem;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.10);
+      font-size:.82rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .hero-title{
+      font-size:clamp(1.55rem, 2vw, 2.4rem);
+      font-weight:800;
+      letter-spacing:-.03em;
+      margin:.95rem 0 .35rem;
+    }
+    .hero-copy{
+      max-width:560px;
+      color:rgba(255,255,255,.78);
+      margin:0;
+    }
+    .hero-stats{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:1rem;
+      margin-top:1.35rem;
+    }
+    .hero-stat{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.08);
+      border-radius:22px;
+      padding:1rem 1.05rem;
+      backdrop-filter:blur(8px);
+    }
+    .hero-stat-label{
+      color:rgba(255,255,255,.70);
+      font-size:.77rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:.45rem;
+    }
+    .hero-stat-value{
+      font-size:1.45rem;
+      font-weight:800;
+      line-height:1.1;
+    }
+    .hero-stat-note{
+      color:rgba(255,255,255,.74);
+      font-size:.88rem;
+      margin-top:.45rem;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:minmax(320px, 380px) minmax(0, 1fr);
+      gap:1.25rem;
+      margin-top:1.25rem;
+    }
+    .panel{
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(10,26,47,.06);
+      border-radius:26px;
+      box-shadow:0 16px 36px rgba(10,26,47,.08);
+      padding:1.35rem;
+    }
+    .panel-glow{
+      background:
+        radial-gradient(220px 140px at 100% 0%, rgba(17,148,214,.11), transparent 60%),
+        linear-gradient(180deg,#ffffff 0%, #fbfdff 100%);
+    }
+    .section-tag{
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      padding:.38rem .72rem;
+      border-radius:999px;
+      background:#eff8ff;
+      color:var(--sky-deep);
+      font-size:.8rem;
+      font-weight:700;
+    }
+    .panel-title{
+      color:var(--ink);
+      font-size:1.3rem;
+      font-weight:800;
+      letter-spacing:-.02em;
+      margin:.85rem 0 .25rem;
+    }
+    .panel-copy{
+      color:var(--muted);
+      margin:0 0 1.1rem;
+    }
+    .form-label{
+      color:var(--ink);
+      font-weight:700;
+      margin-bottom:.45rem;
+    }
+    .form-control,.form-select{
+      min-height:52px;
+      border-radius:16px;
+      border-color:var(--stroke);
+      background:#fbfdff;
+    }
+    .form-control:focus,.form-select:focus{
+      border-color:var(--sky);
+      box-shadow:0 0 0 .2rem rgba(17,148,214,.14);
+      background:#fff;
+    }
+    .quick-fill{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.6rem;
+      margin-top:.8rem;
+    }
+    .quick-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      border-radius:999px;
+      border:1px solid #c8dced;
+      background:#f6fbff;
+      color:var(--ink-soft);
+      padding:.48rem .85rem;
+      font-size:.9rem;
+      font-weight:700;
+      cursor:pointer;
+      transition:all .16s ease;
+      user-select:none;
+    }
+    .quick-chip:hover{
+      background:#eef8ff;
+      transform:translateY(-1px);
+    }
+    .quick-chip.active{
+      background:linear-gradient(135deg,var(--sky) 0%, var(--sky-deep) 100%);
+      border-color:transparent;
+      color:#fff;
+      box-shadow:0 12px 22px rgba(17,148,214,.22);
+    }
+    .pay-method{
+      display:flex;
+      align-items:center;
+      gap:.8rem;
+      min-height:56px;
+      border:1px solid var(--stroke);
+      border-radius:18px;
+      background:#f7fbff;
+      padding:0 1rem;
+      color:var(--ink);
+      font-weight:600;
+    }
+    .pay-icon{
+      width:38px;
+      height:38px;
+      display:grid;
+      place-items:center;
+      border-radius:12px;
+      background:linear-gradient(135deg,#dff3ff 0%, #edf8ff 100%);
+      color:var(--sky-deep);
+      font-size:1rem;
+    }
+    .btn-brand{
+      border:none;
+      border-radius:18px;
+      padding:.98rem 1.15rem;
+      background:linear-gradient(135deg,var(--sky) 0%, var(--sky-deep) 100%);
+      color:#fff;
+      font-weight:800;
+      letter-spacing:.01em;
+      box-shadow:0 16px 28px rgba(17,148,214,.24);
+    }
+    .btn-brand:hover{
+      filter:brightness(.98);
+      color:#fff;
+    }
+    .btn-brand:disabled{
+      opacity:.72;
+      box-shadow:none;
+    }
+    .soft-note{
+      margin-top:1rem;
+      padding:.9rem 1rem;
+      border-radius:18px;
+      background:#f6fbff;
+      border:1px solid var(--stroke);
+      color:var(--muted);
+      font-size:.92rem;
+    }
+    .debug-box{
+      margin-top:1rem;
+      border:1px solid var(--stroke);
+      border-radius:18px;
+      background:#f8fbff;
+      padding:.95rem 1rem;
+      font-size:.88rem;
+      color:var(--ink);
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .table-wrap{
+      border:1px solid rgba(10,26,47,.06);
+      border-radius:22px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .table{
+      margin-bottom:0;
+    }
+    .table thead th{
+      background:#f6fbff;
+      color:var(--ink);
+      border-bottom:1px solid var(--stroke);
+      font-size:.78rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      padding:.95rem 1rem;
+    }
+    .table tbody td{
+      padding:1rem;
+      vertical-align:middle;
+      border-color:#edf2f7;
+    }
+    .badge-soft{
+      display:inline-flex;
+      align-items:center;
+      gap:.4rem;
+      padding:.36rem .7rem;
+      border-radius:999px;
+      font-size:.78rem;
+      font-weight:700;
+      border:1px solid transparent;
+    }
+    .ok{background:#ecfdf5;color:var(--ok);border-color:#bbf7d0;}
+    .warn{background:#fff7ed;color:var(--warn);border-color:#fed7aa;}
+    .bad{background:#fef2f2;color:var(--danger);border-color:#fecaca;}
+    .toolbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:1rem;
+      margin-bottom:1rem;
+    }
+    .toolbar-title{
+      color:var(--ink);
+      font-size:1.25rem;
+      font-weight:800;
+      margin:0;
+    }
+    .toolbar-copy{
+      color:var(--muted);
+      margin:.25rem 0 0;
+    }
+    .filter-card{
+      border:1px solid var(--stroke);
+      border-radius:22px;
+      background:#fbfdff;
+      padding:1rem;
+      margin-bottom:1rem;
+    }
+    .mini-note{
+      color:var(--muted);
+      font-size:.9rem;
+    }
+    .pagination .page-link{
+      border-radius:12px;
+      border-color:var(--stroke);
+      color:var(--ink-soft);
+      margin:0 .12rem;
+    }
+    .pagination .page-item.active .page-link{
+      background:linear-gradient(135deg,var(--sky) 0%, var(--sky-deep) 100%);
+      border-color:transparent;
+    }
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;}
+    @media (max-width: 1199.98px){
+      .grid{
+        grid-template-columns:1fr;
+      }
+    }
+    @media (max-width: 767.98px){
+      .provider-shell{
+        padding-top:.9rem;
+      }
+      .provider-hero,
+      .panel{
+        border-radius:22px;
+      }
+      .hero-stats{
+        grid-template-columns:1fr;
+      }
+      .toolbar{
+        flex-direction:column;
+        align-items:stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  {% include 'admin_sidebar.html' %}
+
+  <div class="customer-content">
+    <div class="container-fluid provider-shell">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <section class="provider-hero">
+        <div class="eyebrow">
+          <i class="bi bi-hdd-network"></i>
+          Provider Control
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-label">Available Balance</div>
+            <div class="hero-stat-value">
+              {% if balance_value is not none %}
+                GHS {{ '%.2f'|format((balance_value or 0)|float) }}
+              {% else %}
+                --
+              {% endif %}
+            </div>
+            <div class="hero-stat-note">
+              {% if balance_result.ok %}
+                Latest provider balance loaded.
+              {% else %}
+                {{ balance_result.message or 'Balance fetch failed.' }}
+              {% endif %}
+            </div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-label">Transactions</div>
+            <div class="hero-stat-value">{{ pagination.total if pagination.total is not none else (transactions|length) }}</div>
+            <div class="hero-stat-note">Page {{ pagination.page or 1 }} of {{ pagination.total_pages or 1 }}</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-label">Provider State</div>
+            <div class="hero-stat-value">
+              {% if balance_result.ok %}
+                Online
+              {% else %}
+                Attention
+              {% endif %}
+            </div>
+            <div class="hero-stat-note">
+              {% if tx_result.ok %}
+                Transaction feed available.
+              {% else %}
+                History feed needs review.
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid">
+        <aside class="panel panel-glow h-100">
+          <div class="section-tag">
+            <i class="bi bi-wallet2"></i>
+            Provider Topup
+          </div>
+          <h2 class="panel-title">Fund provider balance</h2>
+
+          <form id="providerTopupForm" autocomplete="off" onsubmit="return false">
+            <div class="mb-3">
+              <label class="form-label" for="providerTopupAmount">Amount</label>
+              <input type="number" step="0.01" min="0.01" id="providerTopupAmount" name="amount" class="form-control" placeholder="100" required>
+              <div class="quick-fill">
+                <span class="quick-chip" role="button" tabindex="0" data-val="50"><i class="bi bi-lightning-charge"></i> GHS 50</span>
+                <span class="quick-chip" role="button" tabindex="0" data-val="100"><i class="bi bi-lightning-charge"></i> GHS 100</span>
+                <span class="quick-chip" role="button" tabindex="0" data-val="200"><i class="bi bi-lightning-charge"></i> GHS 200</span>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Payment Method</label>
+              <div class="pay-method">
+                <span class="pay-icon"><i class="bi bi-credit-card-2-front"></i></span>
+                <span>Paystack</span>
+              </div>
+            </div>
+
+            <button type="button" class="btn btn-brand w-100" id="providerTopupBtn" {% if not provider_paystack_ready %}disabled{% endif %}>
+              <i class="bi bi-wallet2 me-2"></i>Pay & Credit Provider
+            </button>
+          </form>
+
+          <div class="debug-box d-none" id="providerTopupDebug"></div>
+          {% if not provider_paystack_ready %}
+            <div class="text-danger small mt-3">Provider Paystack keys are not configured in env.</div>
+          {% endif %}
+        </aside>
+
+        <section class="panel h-100">
+          <div class="toolbar">
+            <div>
+              <h2 class="toolbar-title">Transaction History</h2>
+            </div>
+            {% if tx_result.ok %}
+              <span class="badge-soft ok"><i class="bi bi-check-circle"></i> History loaded</span>
+            {% else %}
+              <span class="badge-soft warn"><i class="bi bi-exclamation-circle"></i> {{ tx_result.message or 'History fetch failed' }}</span>
+            {% endif %}
+          </div>
+
+          <form method="GET" class="filter-card">
+            <div class="row g-3">
+              <div class="col-12 col-md-4">
+                <label class="form-label">Type</label>
+                <input type="text" name="type" class="form-control" value="{{ selected_type or '' }}" placeholder="external_api_funding">
+              </div>
+              <div class="col-12 col-md-3">
+                <label class="form-label">Status</label>
+                <input type="text" name="status" class="form-control" value="{{ selected_status or '' }}" placeholder="success">
+              </div>
+              <div class="col-12 col-md-3">
+                <label class="form-label">Per Page</label>
+                <select name="limit" class="form-select">
+                  {% for n in [10,20,50,100] %}
+                    <option value="{{ n }}" {% if selected_limit == n %}selected{% endif %}>{{ n }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-12 col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+              </div>
+            </div>
+          </form>
+
+          <div class="table-wrap">
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Reference</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th class="text-end">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for tx in transactions %}
+                    {% set ref = tx.get('paystack_reference') or tx.get('reference') or tx.get('client_reference') or tx.get('order_id') or tx.get('id') %}
+                    {% set status = (tx.get('status') or tx.get('api_status') or tx.get('state') or '-') %}
+                    {% set amount = tx.get('amount') if tx.get('amount') is not none else tx.get('charged_amount') %}
+                    {% set tx_type = tx.get('type') or tx.get('source') or tx.get('kind') or '-' %}
+                    {% set tx_date = tx.get('created_at') or tx.get('updated_at') or tx.get('date') or '-' %}
+                    <tr>
+                      <td class="mono small">{{ tx_date }}</td>
+                      <td class="mono small">{{ ref or '-' }}</td>
+                      <td>{{ tx_type }}</td>
+                      <td>
+                        {% set s = (status|string).lower() %}
+                        <span class="badge-soft {% if s in ['success','completed'] %}ok{% elif s in ['failed','error'] %}bad{% else %}warn{% endif %}">
+                          {{ status }}
+                        </span>
+                      </td>
+                      <td class="text-end fw-semibold">
+                        {% if amount is not none %}
+                          GHS {{ '%.2f'|format((amount or 0)|float) }}
+                        {% else %}
+                          -
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="5" class="text-center text-muted py-5">No provider transactions found for the selected filters.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {% set pg = pagination.page or 1 %}
+          {% set total_pages = pagination.total_pages or 1 %}
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-3">
+            <div class="mini-note">Page {{ pg }} of {{ total_pages }}</div>
+            <nav>
+              <ul class="pagination pagination-sm mb-0">
+                {% if pg > 1 %}
+                  <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin_provider.provider_dashboard', page=pg-1, limit=selected_limit, type=selected_type, status=selected_status) }}">Prev</a>
+                  </li>
+                {% endif %}
+                {% for p in range(1, total_pages + 1) %}
+                  <li class="page-item {% if p == pg %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('admin_provider.provider_dashboard', page=p, limit=selected_limit, type=selected_type, status=selected_status) }}">{{ p }}</a>
+                  </li>
+                {% endfor %}
+                {% if pg < total_pages %}
+                  <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin_provider.provider_dashboard', page=pg+1, limit=selected_limit, type=selected_type, status=selected_status) }}">Next</a>
+                  </li>
+                {% endif %}
+              </ul>
+            </nav>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (function(){
+      const form = document.getElementById('providerTopupForm');
+      const btn = document.getElementById('providerTopupBtn');
+      const amountEl = document.getElementById('providerTopupAmount');
+      const debugEl = document.getElementById('providerTopupDebug');
+      const quickChips = Array.from(document.querySelectorAll('.quick-chip'));
+      const paystackPk = {{ (provider_paystack_pk or '')|tojson }};
+
+      function setDebug(message){
+        if (!debugEl) return;
+        debugEl.classList.remove('d-none');
+        debugEl.textContent = message;
+      }
+
+      function appendDebug(message){
+        if (!debugEl) return;
+        debugEl.classList.remove('d-none');
+        debugEl.textContent = debugEl.textContent ? `${debugEl.textContent}\n${message}` : message;
+      }
+
+      function paystackEmail(){
+        return 'deikoj17@gmail.com';
+      }
+
+      function showError(message){
+        appendDebug(`Error: ${message}`);
+        window.alert(message);
+      }
+
+      function syncQuickChips(){
+        const current = Number(amountEl?.value || 0);
+        quickChips.forEach(function(chip){
+          const chipVal = Number(chip.getAttribute('data-val') || 0);
+          chip.classList.toggle('active', chipVal > 0 && Math.abs(chipVal - current) < 0.01);
+        });
+      }
+
+      function setAmount(value){
+        if (!amountEl) return;
+        amountEl.value = Number(value).toFixed(2);
+        syncQuickChips();
+        amountEl.focus();
+      }
+
+      function setLoading(on){
+        if (!btn) return;
+        btn.disabled = !!on;
+        btn.innerHTML = on
+          ? '<span class="spinner-border spinner-border-sm me-2"></span>Processing...'
+          : '<i class="bi bi-wallet2 me-2"></i>Pay & Credit Provider';
+      }
+
+      async function verifyAndCredit(reference, amount, dateValue){
+        appendDebug(`Verifying Paystack reference: ${reference}`);
+        const res = await fetch('{{ url_for("admin_provider.provider_topup_verify") }}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          body: JSON.stringify({ reference, amount, date: dateValue })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) {
+          appendDebug(`Verify/topup failed: ${data.message || 'Unknown error'}`);
+          throw new Error(data.message || 'Provider credit failed.');
+        }
+        appendDebug('Verify/topup succeeded.');
+        return data;
+      }
+
+      if (!form || !btn) return;
+
+      if (amountEl) {
+        amountEl.addEventListener('input', syncQuickChips);
+      }
+
+      quickChips.forEach(function(chip){
+        const applyValue = function(){
+          const val = Number(chip.getAttribute('data-val') || 0);
+          if (val > 0) {
+            setAmount(val);
+          }
+        };
+        chip.addEventListener('click', applyValue);
+        chip.addEventListener('keydown', function(event){
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            applyValue();
+          }
+        });
+      });
+
+      syncQuickChips();
+
+      window.addEventListener('error', function(event){
+        appendDebug(`Window error: ${event.message || 'Unknown error'}`);
+      });
+
+      window.addEventListener('unhandledrejection', function(event){
+        const reason = event.reason && event.reason.message ? event.reason.message : String(event.reason || 'Unknown promise rejection');
+        appendDebug(`Unhandled rejection: ${reason}`);
+      });
+
+      btn.addEventListener('click', function(){
+        const amount = Number(amountEl?.value || 0);
+        const dateValue = new Date().toISOString().slice(0, 10);
+        setDebug(`Starting topup\nAmount: ${amount}\nDate: ${dateValue}`);
+
+        if (!amount || amount <= 0) {
+          showError('Enter a valid amount.');
+          amountEl?.focus();
+          return;
+        }
+        if (!paystackPk || String(paystackPk).toLowerCase().indexOf('pk_') !== 0) {
+          showError('Provider Paystack public key is not configured.');
+          return;
+        }
+        if (!window.PaystackPop || typeof window.PaystackPop.setup !== 'function') {
+          showError('Paystack inline is not available.');
+          return;
+        }
+
+        setLoading(true);
+        const payEmail = paystackEmail();
+        appendDebug(`Creating Paystack handler for email: ${payEmail}`);
+        let handler;
+        try {
+          handler = window.PaystackPop.setup({
+            key: paystackPk,
+            email: payEmail,
+            amount: Math.round(amount * 100),
+            currency: 'GHS',
+            metadata: {
+              custom_fields: [{ display_name: 'Platform', variable_name: 'platform', value: 'SpeedLink Web' }]
+            },
+            callback: function(response){
+              appendDebug(`Paystack callback received: ${response.reference || 'no reference'}`);
+              verifyAndCredit(response.reference, amount, dateValue)
+                .then(function(result){
+                  window.alert(result.message || 'Provider balance credited successfully.');
+                  window.location.reload();
+                })
+                .catch(function(err){
+                  setLoading(false);
+                  showError(err.message || 'Provider credit failed.');
+                });
+            },
+            onClose: function(){
+              appendDebug('Paystack popup closed.');
+              setLoading(false);
+            }
+          });
+        } catch (err) {
+          console.error(err);
+          setLoading(false);
+          showError(`Paystack setup failed: ${err && err.message ? err.message : 'Script error'}`);
+          return;
+        }
+        try {
+          appendDebug('Opening Paystack iframe...');
+          handler.openIframe();
+          appendDebug('openIframe() called.');
+        } catch (err) {
+          console.error(err);
+          setLoading(false);
+          showError('Unable to open Paystack. Check the public key and try again.');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
