@@ -1,0 +1,1801 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>SpeedLink | Fast, Secure Data Ordering in Ghana</title>
+
+  <!-- Primary SEO -->
+  <meta name="description" content="SpeedLink offers fast, secure and affordable data ordering for MTN, AirtelTigo, and Telecel in Ghana." />
+  <meta name="keywords" content="SpeedLink, SpeedLink, data bundles Ghana, MTN data, AirtelTigo data, Telecel data, affordable data Ghana, secure data ordering" />
+  <meta name="author" content="SpeedLink" />
+  <link rel="canonical" href="{{ request.url_root | trim('/') if request else '/' }}" />
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#0D1B3D" />
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+  <link rel="icon" type="image/png" href="{{ url_for('brand_images', filename='logo_for_white_bg.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('brand_images', filename='logo_for_white_bg.png') }}">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="SpeedLink" />
+  <meta property="og:description" content="Fast, secure and affordable data ordering with SpeedLink." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{{ request.url_root | trim('/') if request else '/' }}" />
+  <meta property="og:site_name" content="SpeedLink" />
+  <meta property="og:image" content="{{ request.url_root | trim('/') if request else '' }}{{ url_for('brand_images', filename='logo_text_for_white_bg.png') }}" />
+  <meta property="og:locale" content="en_GH" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="SpeedLink" />
+  <meta name="twitter:description" content="Fast, secure and affordable data ordering with SpeedLink." />
+  <meta name="twitter:image" content="{{ request.url_root | trim('/') if request else '' }}{{ url_for('brand_images', filename='logo_text_for_white_bg.png') }}" />
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"Organization",
+    "name":"SpeedLink",
+    "url":"{{ request.url_root | trim('/') if request else '/' }}",
+    "logo":"{{ request.url_root | trim('/') if request else '' }}{{ url_for('brand_images', filename='logo_for_white_bg.png') }}",
+    "sameAs":[]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"WebSite",
+    "name":"SpeedLink",
+    "url":"{{ request.url_root | trim('/') if request else '/' }}",
+    "potentialAction":{
+      "@type":"SearchAction",
+      "target":"{{ request.url_root | trim('/') if request else '' }}/search?q={query}",
+      "query-input":"required name=query"
+    }
+  }
+  </script>
+
+  <!-- Preloads -->
+  <link rel="preload" as="image" href="{{ url_for('brand_images', filename='logo_text_for_blue_bg.png') }}" />
+  <link rel="preload" as="image" href="{{ url_for('brand_images', filename='logo_text_for_white_bg.png') }}" />
+
+  <!-- Bootstrap + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+
+  <style>
+    :root{
+      --navy:#0D1B3D;
+      --navy-2:#102653;
+      --blue:#1565FF;
+      --blue-soft:#D9E6FF;
+      --gold:#F5B400;
+      --gold-deep:#C88D00;
+      --surface:#F3F6FA;
+      --card:#FFFFFF;
+      --text:#0F172A;
+      --text-soft:#5B6475;
+      --border:#D8E0EC;
+      --shadow:0 20px 55px rgba(13, 27, 61, .10);
+      --shadow-soft:0 12px 32px rgba(13, 27, 61, .08);
+      --radius-lg:24px;
+      --radius-md:18px;
+      --radius-sm:14px;
+      --bs-primary:#1565FF;
+      --bs-secondary:#0D1B3D;
+      --bs-warning:#F5B400;
+    }
+
+    *{ box-sizing:border-box; }
+    html{ scroll-behavior:smooth; }
+    body{
+      background:
+        radial-gradient(circle at top right, rgba(21, 101, 255, .14), transparent 26%),
+        linear-gradient(180deg, #eef4ff 0%, var(--surface) 26%, #edf2f8 100%);
+      color:var(--text);
+      font-family:"Manrope","Segoe UI",Tahoma,sans-serif;
+      min-height:100vh;
+    }
+    h1,h2,h3,h4,h5,h6,.navbar-brand,.order-title,.cart-title,.modal-title{
+      font-family:"Poppins","Manrope","Segoe UI",sans-serif;
+      letter-spacing:-.02em;
+    }
+    a{ text-decoration:none; }
+
+    .navbar{
+      position:sticky;
+      top:0;
+      z-index:1035;
+      padding:.95rem 1rem;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.08), transparent 45%),
+        linear-gradient(90deg, #081227 0%, var(--navy) 42%, var(--navy-2) 72%, #0B2048 100%);
+      border-bottom:1px solid rgba(255,255,255,.10);
+      box-shadow:0 16px 40px rgba(2, 8, 23, .28);
+      backdrop-filter:blur(14px);
+    }
+    .navbar-brand{
+      gap:.85rem;
+      font-weight:800;
+      color:#fff;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+    }
+    .navbar-brand img{
+      object-fit:contain;
+      filter:drop-shadow(0 8px 18px rgba(0,0,0,.18));
+    }
+    .brand-icon{
+      width:48px;
+      height:48px;
+      flex:0 0 auto;
+    }
+    .brand-wordmark{
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:.1rem;
+      flex:0 1 auto;
+    }
+    .brand-wordmark strong{
+      color:#fff;
+      font-size:1rem;
+      letter-spacing:.08em;
+      line-height:1;
+    }
+    .brand-wordmark span{
+      color:rgba(255,255,255,.74);
+      font-size:.68rem;
+      letter-spacing:.12em;
+      line-height:1;
+    }
+    .nav-link{
+      color:rgba(243,246,250,.88) !important;
+      font-weight:600;
+      padding:.55rem .9rem !important;
+      border-radius:999px;
+      transition:all .2s ease;
+    }
+    .nav-link:hover{
+      color:#fff !important;
+      background:rgba(255,255,255,.08);
+    }
+    .navbar-toggler{
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:14px;
+      padding:.45rem .65rem;
+    }
+    .navbar-toggler:focus{ box-shadow:0 0 0 .2rem rgba(21,101,255,.22); }
+    .btn-cta{
+      border-radius:999px;
+      padding:.78rem 1.2rem;
+      font-weight:700;
+      letter-spacing:.01em;
+      transition:transform .2s ease, box-shadow .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
+    }
+    .btn-cta:hover{ transform:translateY(-1px); }
+    .btn-outline-light.btn-cta{
+      border-color:rgba(255,255,255,.25);
+      color:#fff;
+      background:rgba(255,255,255,.03);
+    }
+    .btn-outline-light.btn-cta:hover{
+      border-color:rgba(255,255,255,.4);
+      background:rgba(255,255,255,.09);
+      color:#fff;
+      box-shadow:0 14px 26px rgba(0,0,0,.18);
+    }
+    .btn-light.btn-cta,
+    .btn-primary,
+    .order-btn,
+    .checkout-btn,
+    .tile-btn:not([disabled]){
+      background:linear-gradient(135deg, var(--gold) 0%, #FFCA3A 100%);
+      border:1px solid rgba(245,180,0,.45);
+      color:#231600;
+      box-shadow:0 14px 30px rgba(245,180,0,.22);
+    }
+    .btn-light.btn-cta:hover,
+    .btn-primary:hover,
+    .order-btn:hover,
+    .checkout-btn:hover,
+    .tile-btn:not([disabled]):hover{
+      background:linear-gradient(135deg, #ffcb38 0%, #f2ab00 100%);
+      color:#1c1400;
+      box-shadow:0 18px 34px rgba(245,180,0,.28);
+    }
+
+    .page-head{
+      position:relative;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(21,101,255,.25), transparent 18%),
+        radial-gradient(circle at 85% 15%, rgba(245,180,0,.18), transparent 16%),
+        linear-gradient(135deg, #091730 0%, var(--navy) 52%, #13306A 100%);
+      padding:4.25rem 0 3rem;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      box-shadow:inset 0 -1px 0 rgba(255,255,255,.06);
+    }
+    .page-head::before{
+      content:"";
+      position:absolute;
+      inset:auto -10% -25% auto;
+      width:300px;
+      height:300px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(245,180,0,.28), transparent 65%);
+      pointer-events:none;
+    }
+    .page-head .container{ position:relative; z-index:1; }
+    .hero-shell{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1.5rem;
+      flex-wrap:wrap;
+    }
+    .hero-copy{ max-width:760px; }
+    .hero-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.55rem;
+      padding:.5rem .95rem;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      color:var(--surface);
+      font-size:.82rem;
+      font-weight:700;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      margin-bottom:1rem;
+      backdrop-filter:blur(10px);
+    }
+    .hero-badge::before{
+      content:"";
+      width:9px;
+      height:9px;
+      border-radius:50%;
+      background:var(--gold);
+      box-shadow:0 0 14px rgba(245,180,0,.7);
+    }
+    .page-head h1{
+      font-size:clamp(2rem, 4vw, 3.6rem);
+      font-weight:800;
+      color:#fff;
+      margin:0;
+    }
+    .page-head p{
+      margin:.9rem 0 0;
+      color:rgba(243,246,250,.84);
+      font-size:1.02rem;
+      max-width:640px;
+    }
+    .services-section{
+      background:transparent;
+      scroll-margin-top:90px;
+      padding-top:1.8rem !important;
+      padding-bottom:2rem !important;
+    }
+    .service-grid{
+      display:grid;
+      gap:1rem;
+      margin-top:1rem;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+    }
+    @media (min-width:768px){
+      .service-grid{ grid-template-columns:repeat(4, minmax(0, 1fr)); }
+    }
+    .service-tile{
+      position:relative;
+      background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.92));
+      border:1px solid rgba(13,27,61,.08);
+      border-radius:22px;
+      padding:1rem;
+      text-align:center;
+      box-shadow:var(--shadow-soft);
+      transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+      overflow:hidden;
+    }
+    .service-tile::before{
+      content:"";
+      position:absolute;
+      inset:0 0 auto;
+      height:4px;
+      background:linear-gradient(90deg, var(--blue), var(--gold));
+      opacity:0;
+      transition:opacity .2s ease;
+    }
+    .service-tile:hover{
+      transform:translateY(-4px);
+      box-shadow:0 18px 36px rgba(13, 27, 61, .14);
+      border-color:rgba(21,101,255,.16);
+    }
+    .service-tile:hover::before,
+    .service-tile.active::before{ opacity:1; }
+    .service-tile.active{
+      border-color:rgba(245,180,0,.55);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,248,229,.95));
+      box-shadow:0 22px 42px rgba(13, 27, 61, .18);
+    }
+    .tile-img{
+      height:58px;
+      width:58px;
+      margin:0 auto .75rem;
+      border-radius:18px;
+      background:linear-gradient(135deg, rgba(21,101,255,.12), rgba(245,180,0,.18));
+      border:1px solid rgba(21,101,255,.08);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .tile-img img{ width:100%; height:100%; object-fit:cover; }
+    .tile-name{
+      font-weight:800;
+      color:var(--navy);
+      font-size:.98rem;
+      margin-bottom:.25rem;
+    }
+    .tile-btn{
+      margin-top:.65rem;
+      width:100%;
+      border:none;
+      border-radius:14px;
+      padding:.72rem .85rem;
+      font-weight:700;
+      font-size:.88rem;
+      transition:all .2s ease;
+    }
+    .tile-btn[disabled]{
+      background:#E9EEF7;
+      color:#7A869A;
+      box-shadow:none;
+      border:1px solid #D9E1EE;
+      cursor:not-allowed;
+    }
+
+    .order-card,
+    .cart-panel,
+    .payment-status-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.95));
+      border:1px solid rgba(13,27,61,.08);
+      border-radius:var(--radius-lg);
+      padding:1.35rem;
+      margin-top:1.1rem;
+      box-shadow:var(--shadow);
+    }
+    .order-card{
+      position:relative;
+      overflow:hidden;
+    }
+    .order-card::before{
+      content:"";
+      position:absolute;
+      inset:0 auto auto 0;
+      width:180px;
+      height:180px;
+      background:radial-gradient(circle, rgba(21,101,255,.10), transparent 72%);
+      pointer-events:none;
+    }
+    .order-title,
+    .cart-title{
+      font-weight:800;
+      color:var(--navy);
+      margin-bottom:.35rem;
+    }
+    .order-label{
+      font-size:.86rem;
+      color:var(--text-soft);
+      margin-bottom:.45rem;
+      font-weight:700;
+    }
+    .order-input,
+    .order-select{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:.85rem .95rem;
+      font-size:.96rem;
+      background:#fff;
+      color:var(--text);
+      transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+    }
+    .order-input:focus,
+    .order-select:focus{
+      outline:none;
+      border-color:rgba(21,101,255,.55);
+      box-shadow:0 0 0 .25rem rgba(21,101,255,.12);
+    }
+    .price-line{
+      margin:.95rem 0 1rem;
+      color:var(--gold-deep);
+      font-weight:800;
+      font-size:1.02rem;
+    }
+    .order-btn,
+    .checkout-btn{
+      width:100%;
+      border:none;
+      border-radius:16px;
+      padding:.88rem 1.1rem;
+      font-weight:800;
+    }
+
+    .cart-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:.75rem;
+      border-bottom:1px solid rgba(13,27,61,.08);
+      padding-bottom:.75rem;
+      margin-bottom:.85rem;
+    }
+    .cart-title{
+      display:flex;
+      align-items:center;
+      gap:.55rem;
+      margin:0;
+    }
+    .cart-title i{ color:var(--blue); }
+    .cart-count{
+      background:linear-gradient(135deg, rgba(21,101,255,.12), rgba(245,180,0,.2));
+      color:var(--navy);
+      padding:.28rem .8rem;
+      border-radius:999px;
+      font-size:.82rem;
+      font-weight:800;
+      border:1px solid rgba(13,27,61,.08);
+    }
+    .cart-foot{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      margin-top:1rem;
+      padding-top:.9rem;
+      border-top:1px solid rgba(13,27,61,.08);
+    }
+    .cart-foot .fw-semibold{
+      color:var(--navy);
+      font-size:1rem;
+    }
+    .checkout-btn{
+      max-width:280px;
+      background:linear-gradient(135deg, var(--blue) 0%, #2F7BFF 100%);
+      color:#fff;
+      border:1px solid rgba(21,101,255,.48);
+      box-shadow:0 18px 36px rgba(21,101,255,.22);
+    }
+    .checkout-btn:hover{
+      background:linear-gradient(135deg, #0f57ea 0%, #3079ff 100%);
+      color:#fff;
+      box-shadow:0 20px 40px rgba(21,101,255,.28);
+    }
+
+    .payment-status-card{
+      border-left:6px solid var(--blue);
+    }
+    .payment-status-card.processing{
+      border-color:var(--blue);
+      background:linear-gradient(180deg, #F6FAFF, #EDF5FF);
+    }
+    .payment-status-card.success{
+      border-color:#149C63;
+      background:linear-gradient(180deg, #F2FFF9, #EBFFF5);
+    }
+    .payment-status-card.warning{
+      border-color:var(--gold);
+      background:linear-gradient(180deg, #FFFBEF, #FFF7DB);
+    }
+    .payment-status-card.error{
+      border-color:#DC3545;
+      background:linear-gradient(180deg, #FFF5F6, #FFECEE);
+    }
+    .receipt-list{ margin:0; padding-left:1rem; }
+    .receipt-actions{
+      display:flex;
+      flex-wrap:nowrap;
+      gap:.5rem;
+      margin-top:1rem;
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+    .receipt-actions .btn,
+    .receipt-actions a{
+      flex:0 0 auto;
+      white-space:nowrap;
+      border-radius:12px;
+      font-weight:700;
+    }
+    .btn-outline-primary{
+      border-color:rgba(21,101,255,.35);
+      color:var(--blue);
+      background:#fff;
+    }
+    .btn-outline-primary:hover{
+      background:var(--blue);
+      border-color:var(--blue);
+      color:#fff;
+    }
+    .btn-outline-secondary{
+      border-color:rgba(13,27,61,.16);
+      color:var(--navy);
+      background:#fff;
+    }
+    .btn-outline-secondary:hover{
+      background:var(--navy);
+      border-color:var(--navy);
+      color:#fff;
+    }
+    .btn-warning{
+      background:linear-gradient(135deg, var(--gold) 0%, #FFCA3A 100%);
+      border-color:rgba(245,180,0,.45);
+      color:#231600;
+    }
+    .btn-light{
+      background:#F5F8FC;
+      border:1px solid rgba(13,27,61,.08);
+      color:var(--navy);
+    }
+    .btn-light:hover{
+      background:#EBF1F8;
+      color:var(--navy);
+    }
+    .btn-outline-danger{
+      border-color:rgba(220,53,69,.24);
+      color:#B42318;
+      background:#fff;
+    }
+    .btn-outline-danger:hover{
+      background:#B42318;
+      border-color:#B42318;
+      color:#fff;
+    }
+    .cart-row{
+      padding:.1rem 0 .85rem;
+      border-bottom:1px solid rgba(13,27,61,.08) !important;
+    }
+    .cart-empty{
+      padding:.9rem 0 .2rem;
+      color:var(--text-soft);
+    }
+
+    .whatsapp-bubble{
+      position:fixed;
+      left:18px;
+      bottom:18px;
+      z-index:1055;
+      width:58px;
+      height:58px;
+      border-radius:50%;
+      background:linear-gradient(135deg, #25D366, #128C7E);
+      color:#fff;
+      border:3px solid rgba(255,255,255,.92);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 18px 34px rgba(10, 28, 61, .22);
+      text-decoration:none;
+      transition:transform .2s ease, box-shadow .2s ease;
+    }
+    .whatsapp-bubble:hover{
+      transform:translateY(-2px) scale(1.02);
+      box-shadow:0 22px 40px rgba(10, 28, 61, .28);
+      color:#fff;
+    }
+    .whatsapp-bubble i{ font-size:1.55rem; }
+
+    .bulk-trigger{ cursor:text; }
+    .amount-cell{ min-width:110px; text-align:right; }
+
+    .redirect-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(7, 16, 37, .68);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:2000;
+      backdrop-filter:blur(5px);
+    }
+    .redirect-card{
+      background:linear-gradient(180deg, #FFFFFF, #F7FAFF);
+      border:1px solid rgba(13,27,61,.08);
+      border-radius:20px;
+      padding:1.1rem 1.25rem;
+      box-shadow:0 22px 44px rgba(0,0,0,.20);
+      display:flex;
+      align-items:center;
+      gap:.85rem;
+      color:var(--navy);
+    }
+
+    .site-footer{
+      margin-top:3rem;
+      background:
+        radial-gradient(circle at top left, rgba(21,101,255,.18), transparent 20%),
+        linear-gradient(135deg, #081227 0%, var(--navy) 55%, #102653 100%);
+      color:#E5ECF7;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .site-footer a{
+      color:#C6D6F3;
+      text-decoration:none;
+      transition:color .2s ease;
+    }
+    .site-footer a:hover{ color:#fff; }
+    .footer-brand{
+      display:flex;
+      align-items:center;
+      gap:.9rem;
+      margin-bottom:.45rem;
+    }
+    .footer-brand img{
+      object-fit:contain;
+    }
+    .footer-brand-icon{
+      width:46px;
+      height:46px;
+      flex:0 0 auto;
+    }
+    .footer-brand-wordmark{
+      display:flex;
+      flex-direction:column;
+      gap:.08rem;
+      flex:0 1 auto;
+    }
+    .footer-brand-lockup{
+      display:flex;
+      align-items:center;
+      gap:.7rem;
+      margin-bottom:.2rem;
+    }
+    .footer-brand-name{
+      color:#fff;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .footer-brand-sub{
+      color:rgba(255,255,255,.72);
+      font-size:.7rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+    .footer-copy{
+      color:rgba(229,236,247,.78);
+      max-width:520px;
+    }
+    .footer-links{
+      display:flex;
+      flex-wrap:wrap;
+      gap:1rem;
+      justify-content:flex-end;
+    }
+
+    .modal-content{
+      border:none;
+      border-radius:24px;
+      overflow:hidden;
+      box-shadow:0 26px 60px rgba(15, 23, 42, .22);
+      background:#fff;
+    }
+    .modal-header{
+      border-bottom:1px solid rgba(13,27,61,.08);
+      background:
+        linear-gradient(135deg, rgba(13,27,61,.98), rgba(21,101,255,.90));
+      color:#fff;
+    }
+    .modal-title{ font-weight:800; }
+    .btn-close{
+      filter:invert(1) grayscale(1) brightness(200%);
+      opacity:.9;
+    }
+    .modal-body p{ margin-bottom:.85rem; color:var(--text); }
+    .modal-body ol{ padding-left:1rem; }
+    .modal-body li{ margin:.4rem 0; color:var(--text); }
+    .modal-body h6{
+      color:var(--navy);
+      font-weight:800;
+      margin-top:1rem;
+    }
+    .modal-footer{
+      border-top:1px solid rgba(13,27,61,.08);
+      background:#FBFCFE;
+    }
+
+    .ported-modal .modal-header{
+      background:linear-gradient(135deg, #3D2C00, #8A6300);
+      border-bottom:1px solid rgba(245,180,0,.22);
+    }
+    .ported-modal .warn-icon{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:38px;
+      height:38px;
+      border-radius:999px;
+      background:rgba(255,255,255,.14);
+      color:#FFD76D;
+    }
+    .ported-modal .prefix-badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.5rem;
+      margin-top:.75rem;
+    }
+    .ported-modal .prefix-badges .badge{
+      font-size:.78rem;
+      padding:.45rem .7rem;
+      border-radius:999px;
+    }
+
+    @media (max-width:991.98px){
+    .navbar-collapse{
+        margin-top:1rem;
+        padding:1rem;
+        border-radius:18px;
+        background:rgba(6, 16, 35, .65);
+        border:1px solid rgba(255,255,255,.08);
+      }
+      .footer-links{ justify-content:flex-start; }
+    }
+    @media (max-width:767.98px){
+      .page-head{ padding:3.35rem 0 2.4rem; }
+      .hero-shell{ align-items:flex-start; }
+      .cart-foot{
+        flex-direction:column;
+        align-items:stretch;
+      }
+      .checkout-btn{ max-width:none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark px-3">
+    <a class="navbar-brand d-flex align-items-center" href="/">
+      <img src="{{ url_for('brand_images', filename='logo_for_white_bg.png') }}" alt="SpeedLink logo" class="brand-icon" loading="eager">
+      <span class="brand-wordmark">
+        <strong>SpeedLink</strong>
+        <span>Fast Data Service</span>
+      </span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div id="navMain" class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto align-items-lg-center">
+        <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+        <li class="nav-item ms-lg-3 my-2 my-lg-0">
+          <a href="/login" class="btn btn-outline-light btn-cta">Login</a>
+        </li>
+        <li class="nav-item ms-lg-2 me-lg-2">
+          <a href="/signup" class="btn btn-light btn-cta">Get Started</a>
+        </li>
+        <li class="nav-item ms-lg-2">
+          <a href="/signup" class="btn btn-outline-light btn-cta">Become an Agent</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="page-head py-3">
+    <div class="container">
+      <div class="hero-shell">
+        <div class="hero-copy">
+          <div class="hero-badge">SpeedLink</div>
+          <h1>Order Data</h1>
+          <p>Fast, secure and affordable data ordering with SpeedLink.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services -->
+  <section id="services" class="services-section py-4">
+    <div class="container">
+      <div class="service-grid">
+        {% if services and services|length > 0 %}
+          {% for svc in services %}
+          {% set status = (svc.status or 'OPEN')|upper %}
+          {% set availability = (svc.availability or 'AVAILABLE')|upper %}
+          {% set is_closed = status != 'OPEN' %}
+          {% set is_oos = availability != 'AVAILABLE' %}
+          {% set can_order = (not is_closed) and (not is_oos) %}
+          <div class="service-tile">
+            <div class="tile-img">
+              {% if svc.image_url %}
+                <img src="{{ svc.image_url }}" alt="{{ svc.name }}">
+              {% endif %}
+            </div>
+            <div class="tile-name">{{ svc.name }}</div>
+            {% if is_closed or is_oos %}
+              <div class="small text-danger mt-1">{{ svc.disabled_reason or 'Unavailable' }}</div>
+            {% endif %}
+            <button
+              class="tile-btn select-service-btn"
+              {% if not can_order %}disabled data-disabled="true"{% endif %}
+              data-service='{{ {
+                "_id_str": svc._id_str,
+                "name": svc.name,
+                "offers": svc.offers or [],
+                "unit": svc.unit
+              } | tojson }}'>
+              Select
+            </button>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-center text-muted">No services available.</div>
+        {% endif %}
+      </div>
+
+      <div class="order-card" id="orderCard">
+        <div class="order-title">Single Order</div>
+        <div class="small text-muted mb-2">Selected service: <span id="selectedServiceName">None</span></div>
+
+        <div class="mb-3">
+          <div class="order-label">Phone Number</div>
+          <input id="orderPhone" class="order-input" placeholder="0240000000" inputmode="numeric">
+        </div>
+
+        <div class="mb-2">
+          <div class="order-label">Bundle Size (GB)</div>
+          <select id="orderOffer" class="order-select">
+            <option value="" selected disabled>Select size</option>
+          </select>
+        </div>
+
+        <div class="price-line">Price: GHS <span id="orderAmount">0.00</span></div>
+        <button type="button" class="order-btn" id="addToCartBtn">Add to Cart</button>
+      </div>
+
+      <div class="cart-panel">
+        <div class="cart-head">
+          <div class="cart-title"><i class="bi bi-cart3"></i> Cart Items</div>
+          <div class="cart-count" id="cartCount">0 items</div>
+        </div>
+        <div id="cart-list" class="vstack gap-3"></div>
+        <div class="cart-foot">
+          <div>
+            <div class="fw-semibold">Subtotal: GHS <span id="cart-total">0.00</span></div>
+          </div>
+          <button class="checkout-btn" id="checkout-btn">Make Payment ( GHS 0.00 )</button>
+        </div>
+      </div>
+
+      <div class="payment-status-card d-none" id="paymentStatusCard">
+        <div class="fw-bold mb-2" id="paymentStatusTitle">Payment Update</div>
+        <div class="text-muted mb-2" id="paymentStatusMessage"></div>
+        <div id="paymentStatusBody"></div>
+        <div class="receipt-actions" id="paymentStatusActions"></div>
+      </div>
+    </div>
+  </section>
+
+    <a class="whatsapp-bubble" href="https://wa.me/233549869925" target="_blank" rel="noopener" aria-label="Chat with SpeedLink on WhatsApp">
+      <i class="bi bi-whatsapp"></i>
+    </a>
+
+    <!-- Ported Number Modal -->
+    <div class="modal fade ported-modal" id="portedModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="d-flex align-items-center gap-2">
+              <span class="warn-icon"><i class="bi bi-exclamation-triangle-fill"></i></span>
+              <h5 class="modal-title mb-0">Ported Number Detected</h5>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div id="portedModalMsg" class="fw-semibold"></div>
+            <div id="portedModalPrefixes" class="prefix-badges"></div>
+            <div class="text-muted small mt-2">
+              If you are sure this number was ported, confirm to continue.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" id="portedCancelBtn">No, I&rsquo;ll Correct It</button>
+            <button type="button" class="btn btn-warning text-dark" id="portedConfirmBtn">Yes, It&rsquo;s Ported</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Duplicate Cart Modal -->
+    <div class="modal fade" id="dupCartModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Duplicate Item</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div id="dupCartModalMsg">This number is already in your cart for the same bundle. Add anyway?</div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="dupCartModalConfirm">Add Anyway</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container pb-5">
+    <div class="d-flex justify-content-center">
+      <a href="/check-status" class="btn btn-outline-primary btn-cta">Check Order Status</a>
+    </div>
+  </div>
+
+  <!-- Redirect overlay -->
+  <div class="redirect-overlay d-none" id="redirectOverlay">
+    <div class="redirect-card">
+      <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+      <div class="fw-semibold">Processing your order...</div>
+    </div>
+  </div>
+
+  
+
+  <!-- Footer -->
+  <footer class="site-footer py-4">
+    <div class="container d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+      <div class="small">
+        <div class="footer-brand">
+          <div class="footer-brand-lockup">
+            <img src="{{ url_for('brand_images', filename='logo_for_white_bg.png') }}" alt="SpeedLink logo" class="footer-brand-icon">
+            <div class="footer-brand-wordmark">
+              <div class="footer-brand-name">SpeedLink</div>
+              <div class="footer-brand-sub">Fast Data Service</div>
+            </div>
+          </div>
+          <div>
+            <div class="footer-copy">Premium, secure and affordable data ordering for Ghana. Phone: 0549869925 | WhatsApp: 0549869925</div>
+          </div>
+        </div>
+        &copy; <span id="yearNow"></span> SpeedLink. All rights reserved.
+      </div>
+      <div class="small footer-links">
+        <a href="/">Home</a>
+        <a href="#services">Services</a>
+        <a href="#" data-bs-toggle="modal" data-bs-target="#aboutModal">About</a>
+        <a href="#" data-bs-toggle="modal" data-bs-target="#tosModal">Terms of Service</a>
+        <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a>
+        <a href="https://wa.me/233549869925" target="_blank" rel="noopener">WhatsApp</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== Modals ===== -->
+
+  <!-- About Us Modal -->
+  <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="aboutModalLabel">About SpeedLink</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p><strong>SpeedLink</strong> provides affordable, reliable data bundles across MTN, AirtelTigo, and Telecel with a cleaner, faster and more secure ordering experience.</p>
+          <p>Our promise is simple: fair pricing, transparent updates, responsive support, and a premium fintech-style checkout flow that helps you stay connected with confidence.</p>
+          <p>For quick help, call or WhatsApp us on <strong>0549869925</strong>.</p>
+          <p class="mb-0"><em>Team SpeedLink.</em></p>
+        </div>
+        <div class="modal-footer">
+          <a href="/signup" class="btn btn-primary">Create Account</a>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terms of Service Modal -->
+  <div class="modal fade" id="tosModal" tabindex="-1" aria-labelledby="tosModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="tosModalLabel">Terms of Service</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <ol>
+            <li>By placing an order with SpeedLink, you acknowledge that you have read and agree to these Terms of Service.</li>
+            <li>We reserve the right to change these Terms of Service without notice. Please regularly check this page for updates.</li>
+            <li>You agree to use SpeedLink in compliance with the qualifications and agreements outlined in sections 7 and 8 of these Terms of Service.</li>
+            <li>Our rates are subject to change at any time in accordance with our Telcos Policy or Supplier Agreement. We will notify you of any rate changes through SpeedLink or other means.</li>
+            <li>We strive to deliver services promptly, but delivery times are estimates only and not guaranteed. Estimated delivery times are 0-24 hours. After 24 hours, you may be eligible for a refund, excluding cases of network difficulties.</li>
+            <li>Refunds will not be issued for orders that do not meet our qualification requirements.</li>
+            <li>To avoid issues, please:
+              <ol type="i">
+                <li>Place orders for services in the correct category (e.g., MTN in the MTN column, not in Airtel/Tigo column, and vice versa).</li>
+                <li>Ensure the phone number is correct and complete.</li>
+              </ol>
+            </li>
+            <li>Meet the 3 core qualifications for Afa minutes orders as outlined on our WhatsApp page before placing; otherwise, refunds for unqualified orders will be handled on merit.</li>
+          </ol>
+          <p class="mb-0"><em>Best Regards,<br/>Team SpeedLink.</em></p>
+        </div>
+        <div class="modal-footer">
+          <a href="/signup" class="btn btn-primary">Agree &amp; Sign Up</a>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Privacy Policy Modal -->
+  <div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="privacyModalLabel">Privacy Policy</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Welcome to SpeedLink. This Privacy Policy describes how we collect, use, disclose, and protect your personal information. By using our services, you agree to the terms outlined in this policy.</p>
+
+          <h6>Information We Collect</h6>
+          <p><strong>Personal Information:</strong> We may collect personal information, such as your name, email address, and payment details, when you use our services.</p>
+          <p><strong>Usage Data:</strong> We automatically collect information about how you interact with our website and services, including your IP address, browser type, and pages visited.</p>
+
+          <h6>How We Use Your Information</h6>
+          <p><strong>Service Delivery:</strong> We use your personal information to deliver the services you've requested, including processing orders and providing customer support.</p>
+          <p><strong>Communications:</strong> We may contact you with important service-related announcements, newsletters, and promotional offers based on your preferences.</p>
+
+          <h6>Data Security</h6>
+          <p>We implement industry-standard security measures to protect your personal information from unauthorized access, disclosure, alteration, and destruction.</p>
+
+          <h6>Information Sharing</h6>
+          <p>We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as required by law.</p>
+
+          <h6>Cookies and Tracking Technologies</h6>
+          <p>We use cookies and similar tracking technologies to enhance your experience, gather usage information, and improve our services.</p>
+
+          <h6>Updates</h6>
+          <p>We reserve the right to update this Privacy Policy at any time. We&apos;ll notify you of any significant changes through the contact information you provide.</p>
+
+          <h6>Contact Us</h6>
+          <p>If you have any questions or concerns about this Privacy Policy, please contact Team SpeedLink on phone or WhatsApp at <strong>0549869925</strong>.</p>
+
+          <p class="mb-0"><em>Team SpeedLink.</em></p>
+        </div>
+        <div class="modal-footer">
+          <a href="/signup" class="btn btn-primary">Create Account</a>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (function(){
+      const PAYSTACK_PK = "{{ (paystack_pk or '')|e }}";
+      let cart = [];
+
+      const cartCount = document.getElementById("cartCount");
+      const cartList = document.getElementById("cart-list");
+      const cartTotalEl = document.getElementById("cart-total");
+      const paystackTotalEl = document.getElementById("paystack-total");
+      const checkoutBtn = document.getElementById("checkout-btn");
+      const PAYSTACK_FEE_RATE = 0.02;
+      const CART_STORAGE_KEY = "public_cart";
+      const DUPLICATE_MSG = "This number is already in your cart for the same bundle. Add anyway?";
+      const PAYMENT_SESSION_URL = "/public-payment-session";
+      const PUBLIC_CHECKOUT_URL = "/public-checkout";
+      const PUBLIC_REPROCESS_URL = "/public-reprocess-order";
+      const PUBLIC_STATUS_URL = "/public-order-status-by-ref";
+      const paymentStatusCard = document.getElementById("paymentStatusCard");
+      const paymentStatusTitle = document.getElementById("paymentStatusTitle");
+      const paymentStatusMessage = document.getElementById("paymentStatusMessage");
+      const paymentStatusBody = document.getElementById("paymentStatusBody");
+      const paymentStatusActions = document.getElementById("paymentStatusActions");
+      let activePaymentReference = "";
+      let checkoutBusy = false;
+
+      function randomToken(len){
+        const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        let out = "";
+        if (window.crypto && window.crypto.getRandomValues) {
+          const values = new Uint8Array(len);
+          window.crypto.getRandomValues(values);
+          for (let i = 0; i < values.length; i++){
+            out += chars[values[i] % chars.length];
+          }
+          return out;
+        }
+        while (out.length < len){
+          out += Math.random().toString(36).slice(2);
+        }
+        return out.slice(0, len);
+      }
+
+      function normalizePhoneForEmail(phone){
+        if (!phone) return "";
+        return String(phone).replace(/\D+/g, "");
+      }
+
+      const PHONE_RE = /^0\d{9}$/;
+
+      function generatePaystackEmail(phone){
+        const digits = normalizePhoneForEmail(phone);
+        if (digits) return `deikoj17+${digits}@gmail.com`;
+        return `deikoj17+${randomToken(6)}@gmail.com`;
+      }
+
+
+      function money(v){
+        const n = Number(v || 0);
+        return n.toFixed(2);
+      }
+
+      function calcPaystackTotals(baseTotal){
+        const base = Number(baseTotal || 0);
+        const fee = Math.round(base * PAYSTACK_FEE_RATE * 100) / 100;
+        const total = Math.round((base + fee) * 100) / 100;
+        return { fee: fee, total: total };
+      }
+
+      function cartKey(line){
+        return [
+          line && (line.serviceId || line.service_id || ""),
+          line && (line.phone || ""),
+          line && (line.value_text || line.value || ""),
+          Number(line && line.amount || 0)
+        ].join("|");
+      }
+      function hasDuplicate(line){
+        const key = cartKey(line);
+        for (let i = 0; i < cart.length; i++){
+          if (cartKey(cart[i]) === key) return true;
+        }
+        return false;
+      }
+
+      function showDuplicateModal(message){
+        return new Promise((resolve) => {
+          const modalEl = document.getElementById("dupCartModal");
+          if (!modalEl || !window.bootstrap) {
+            resolve(!!confirm(message || DUPLICATE_MSG));
+            return;
+          }
+          const msgEl = document.getElementById("dupCartModalMsg");
+          const yesBtn = document.getElementById("dupCartModalConfirm");
+          if (msgEl) msgEl.textContent = message || DUPLICATE_MSG;
+          const inst = bootstrap.Modal.getOrCreateInstance(modalEl);
+          let done = false;
+          function cleanup(ok){
+            if (done) return;
+            done = true;
+            modalEl.removeEventListener("hidden.bs.modal", onHidden);
+            yesBtn?.removeEventListener("click", onYes);
+            resolve(ok);
+          }
+          function onHidden(){ cleanup(false); }
+          function onYes(){ inst.hide(); cleanup(true); }
+          modalEl.addEventListener("hidden.bs.modal", onHidden);
+          yesBtn?.addEventListener("click", onYes);
+          inst.show();
+        });
+      }
+
+      function formatDataVolume(mb){
+        const num = Number(mb);
+        if (!isFinite(num)) return null;
+        if (num >= 1000) {
+          const gb = num / 1000;
+          const gbStr = (Math.abs(gb - Math.round(gb)) < 1e-9) ? String(Math.round(gb)) : gb.toFixed(2);
+          return gbStr + "GB";
+        }
+        return String(Math.round(num)) + "MB";
+      }
+
+      function parseLooseObject(str){
+        if (typeof str !== "string") return null;
+        const s = str.trim();
+        if (!s.startsWith("{") || !s.endsWith("}")) return null;
+        try { return JSON.parse(s); } catch (e) {}
+        try {
+          const fixed = s.replace(/'/g, '"');
+          return JSON.parse(fixed);
+        } catch (e) {}
+        return null;
+      }
+
+      function offerLabel(of, unit){
+        if (!of) return "Offer";
+        if (of.value_text) return of.value_text;
+        const v = of.value;
+        if (v && typeof v === "object"){
+          const vol = v.volume;
+          if (vol != null){
+            const num = Number(vol);
+            if (isFinite(num)){
+              if (unit === "minutes") return String(Math.round(num)) + " mins";
+              const dataLabel = formatDataVolume(num);
+              if (dataLabel) return dataLabel;
+            }
+          }
+        }
+        if (typeof v === "string"){
+          const parsed = parseLooseObject(v);
+          if (parsed && typeof parsed === "object" && parsed.volume != null){
+            const num = Number(parsed.volume);
+            if (isFinite(num)){
+              if (unit === "minutes") return String(Math.round(num)) + " mins";
+              const dataLabel = formatDataVolume(num);
+              if (dataLabel) return dataLabel;
+            }
+          }
+          return v;
+        }
+        return "Offer";
+      }
+
+      function buildOfferOptions(offers, unit){
+        if (!Array.isArray(offers)) return "";
+        return offers.map((of, idx) => {
+          const label = offerLabel(of, unit);
+          const amt = (of.total != null ? of.total : of.amount);
+          return `<option value="${idx}">${label} - GHS ${money(amt)}</option>`;
+        }).join("");
+      }
+
+      function updateCartUI(){
+        const total = cart.reduce((sum, it) => sum + Number(it.amount || 0), 0);
+        const paystackTotals = calcPaystackTotals(total);
+        if (cartCount) cartCount.textContent = cart.length + " items";
+        if (cartTotalEl) cartTotalEl.textContent = money(total);
+        if (paystackTotalEl) paystackTotalEl.textContent = money(paystackTotals.total);
+        if (checkoutBtn) checkoutBtn.textContent = "Make Payment ( GHS " + money(paystackTotals.total) + " )";
+        try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); } catch (e) {}
+        if (!cartList) return;
+        cartList.innerHTML = "";
+        if (!cart.length){
+          cartList.innerHTML = "<div class='cart-empty'>Your cart is empty.</div>";
+          return;
+        }
+        cart.forEach((it, idx) => {
+          const row = document.createElement("div");
+          row.className = "cart-row d-flex justify-content-between align-items-start";
+          row.innerHTML = `
+            <div>
+              <div class="fw-semibold">${it.serviceName || "Service"}</div>
+              <div class="small text-muted">${it.phone || ""} - ${it.value_text || offerLabel({ value: it.value }, it.unit) || ""}</div>
+            </div>
+            <div class="text-end">
+              <div class="fw-semibold">GHS ${money(it.amount)}</div>
+              <button class="btn btn-sm btn-outline-danger mt-1" data-remove="${idx}">Remove</button>
+            </div>
+          `;
+          cartList.appendChild(row);
+        });
+      }
+
+      function clearCartState(){
+        cart = [];
+        try { localStorage.removeItem(CART_STORAGE_KEY); } catch (e) {}
+        updateCartUI();
+      }
+
+      function makePublicReference(){
+        return "SPEEDLINK_" + Date.now() + "_" + randomToken(8).toUpperCase();
+      }
+
+      function receiptHtml(receipt){
+        const items = Array.isArray(receipt && receipt.service_summary) ? receipt.service_summary : [];
+        const rows = items.map(it => `<li>${it.service || "Service"} ${it.offer || ""} ${it.phone ? "- " + it.phone : ""}</li>`).join("");
+        return `
+          <div><strong>Order ID:</strong> ${receipt.order_id || "-"}</div>
+          <div><strong>Payment Reference:</strong> ${receipt.payment_reference || "-"}</div>
+          <div><strong>Amount:</strong> GHS ${money(receipt.amount || 0)}</div>
+          <div><strong>Status:</strong> ${receipt.current_order_status || "-"}</div>
+          <div><strong>Created:</strong> ${receipt.created_at || "-"}</div>
+          <div class="mt-2"><strong>Items:</strong></div>
+          <ul class="receipt-list">${rows || "<li>No items found.</li>"}</ul>
+        `;
+      }
+
+      function setPaymentCard(kind, title, message, bodyHtml, actionsHtml){
+        if (!paymentStatusCard) return;
+        paymentStatusCard.classList.remove("d-none", "processing", "success", "warning", "error");
+        paymentStatusCard.classList.add(kind || "warning");
+        if (paymentStatusTitle) paymentStatusTitle.textContent = title || "Payment Update";
+        if (paymentStatusMessage) paymentStatusMessage.textContent = message || "";
+        if (paymentStatusBody) paymentStatusBody.innerHTML = bodyHtml || "";
+        if (paymentStatusActions) paymentStatusActions.innerHTML = actionsHtml || "";
+        paymentStatusCard.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function buildRecoveryActions(reference, orderId, receipt){
+        const invoiceBtn = orderId ? `<a class="btn btn-sm btn-outline-primary" href="/invoice/${encodeURIComponent(orderId)}">View Receipt</a>` : "";
+        const statusBtn = `<button type="button" class="btn btn-sm btn-outline-secondary" id="checkStatusBtn">Check Status</button>`;
+        const retryBtn = `<button type="button" class="btn btn-sm btn-warning" id="reprocessOrderBtn">Click here to reprocess order</button>`;
+        const note = `<div class="small text-muted">Reference: ${reference || "-"}<br>Do not pay again.</div>`;
+        return { html: `${retryBtn}${statusBtn}${invoiceBtn}`, note: note };
+      }
+
+      async function createPaymentSession(reference){
+        const total = cart.reduce((sum, it) => sum + Number(it.amount || 0), 0);
+        const paystackTotals = calcPaystackTotals(total);
+        const res = await fetch(PAYMENT_SESSION_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            reference: reference,
+            cart: cart,
+            total_expected: total,
+            paystack_total_expected: paystackTotals.total
+          })
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || !json.success) {
+          throw new Error((json && json.message) || "Could not start payment session.");
+        }
+        return json;
+      }
+
+      async function fetchOrderStatus(reference){
+        const res = await fetch(PUBLIC_STATUS_URL + "?reference=" + encodeURIComponent(reference));
+        return res.json().catch(() => ({}));
+      }
+
+      async function reprocessOrder(reference){
+        setPaymentCard("processing", "Reprocessing Order", "Payment received. Confirming your order...", "", "");
+        const res = await fetch(PUBLIC_REPROCESS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reference: reference })
+        });
+        const json = await res.json().catch(() => ({}));
+        handleFinalizeResponse(json, reference);
+      }
+
+      async function checkOrderStatus(reference){
+        const json = await fetchOrderStatus(reference);
+        handleFinalizeResponse(json, reference, true);
+      }
+
+      function wirePaymentCardActions(reference){
+        document.getElementById("reprocessOrderBtn")?.addEventListener("click", () => reprocessOrder(reference));
+        document.getElementById("checkStatusBtn")?.addEventListener("click", () => checkOrderStatus(reference));
+      }
+
+      function handleFinalizeResponse(result, reference, fromStatusCheck){
+        const receipt = result && result.receipt ? result.receipt : null;
+        const orderId = (result && result.order_id) || (receipt && receipt.order_id) || "";
+
+        if (result && (result.status === "completed" || result.status === "processing") && receipt) {
+          clearCartState();
+          const actions = `
+            <a class="btn btn-sm btn-primary" href="${receipt.receipt_url || ("/invoice/" + encodeURIComponent(orderId))}">View Receipt</a>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="checkStatusBtn">Check Status</button>
+          `;
+          setPaymentCard(
+            "success",
+            result.status === "completed" ? "Order Confirmed" : "Order Processing",
+            result.message || "Your order has been received successfully.",
+            receiptHtml(receipt),
+            actions
+          );
+          wirePaymentCardActions(reference);
+          setRedirecting(false);
+          return;
+        }
+
+        if (result && result.status === "already_created") {
+          clearCartState();
+          const actions = `
+            <a class="btn btn-sm btn-primary" href="${receipt && receipt.receipt_url ? receipt.receipt_url : ("/invoice/" + encodeURIComponent(orderId))}">View Receipt</a>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="checkStatusBtn">Check Status</button>
+          `;
+          setPaymentCard(
+            "success",
+            "Order Already Placed",
+            result.message || "Order already placed.",
+            receipt ? receiptHtml(receipt) : `<div><strong>Order ID:</strong> ${orderId || "-"}</div>`,
+            actions
+          );
+          wirePaymentCardActions(reference);
+          setRedirecting(false);
+          return;
+        }
+
+        if (result && ["verification_failed_recoverable", "recoverable_failure", "pending"].includes(result.status)) {
+          const recovery = buildRecoveryActions(reference, orderId, receipt);
+          setPaymentCard(
+            "warning",
+            fromStatusCheck ? "Order Status" : "Payment Received",
+            result.message || "Payment was received, but the website could not finish processing your order yet.",
+            recovery.note,
+            recovery.html
+          );
+          wirePaymentCardActions(reference);
+          setRedirecting(false);
+          return;
+        }
+
+        setPaymentCard(
+          "error",
+          "Payment Verification Failed",
+          (result && result.message) || "We could not confirm this payment.",
+          "",
+          `<button type="button" class="btn btn-sm btn-outline-secondary" id="checkStatusBtn">Check Status</button>`
+        );
+        wirePaymentCardActions(reference);
+        setRedirecting(false);
+      }
+
+      function setRedirecting(on){
+        const overlay = document.getElementById("redirectOverlay");
+        if (overlay) overlay.classList.toggle("d-none", !on);
+        if (checkoutBtn) checkoutBtn.disabled = !!on || checkoutBusy;
+      }
+
+      const selectedServiceNameEl = document.getElementById("selectedServiceName");
+      const orderPhoneEl = document.getElementById("orderPhone");
+      const orderOfferEl = document.getElementById("orderOffer");
+      const orderAmountEl = document.getElementById("orderAmount");
+      const addToCartBtn = document.getElementById("addToCartBtn");
+      let selectedService = null;
+
+      // ---------- Ported number helpers ----------
+      function normalizePhone(raw){
+        let d = String(raw || "").replace(/\D+/g, "");
+        if (d.startsWith("233") && d.length >= 12) d = "0" + d.slice(-9);
+        if (d.length === 9) d = "0" + d;
+        if (d.length > 10) d = d.slice(-10);
+        return d;
+      }
+      async function ensurePhoneEligibleForOrder(phone){
+        try {
+          const res = await fetch("/api/phone-numbers/eligibility?phone=" + encodeURIComponent(phone));
+          const data = await res.json();
+          if (res.ok && data && data.allowed) return true;
+          alert((data && data.message) || "Can't Place Order now, Please Contact Admin");
+          return false;
+        } catch (e) {
+          return true;
+        }
+      }
+      function getPrefix(phoneDigits){ return phoneDigits && phoneDigits.length >= 3 ? phoneDigits.slice(0,3) : ""; }
+      function networkFromService(svc){
+        const joined = [svc?.service_network, svc?.network, svc?.serviceName, svc?.name].filter(Boolean).join(" ").toLowerCase();
+        if (joined.includes("mtn")) return "MTN";
+        if (joined.includes("telecel") || joined.includes("vodafone")) return "TELECEL";
+        if (joined.includes("airteltigo") || joined.includes("tigo") || joined.includes("ishare") || joined.startsWith("at")) return "TIGO";
+        return "";
+      }
+      const PREFIX_MAP = {
+        MTN: ["025","024","059","055","054","053"],
+        TELECEL: ["020","050"],
+        TIGO: ["057","056","027","026"]
+      };
+      function networkFromPrefix(prefix){
+        for (const k in PREFIX_MAP){
+          if (PREFIX_MAP[k].includes(prefix)) return k;
+        }
+        return "";
+      }
+      function needsPortedConfirm(expected, actual){ return expected && actual && expected !== actual; }
+      function portedKey(serviceKey, phoneDigits){ return "ported_ok:" + (serviceKey || "") + ":" + phoneDigits; }
+      function isPortedConfirmed(serviceKey, phoneDigits){
+        try { return sessionStorage.getItem(portedKey(serviceKey, phoneDigits)) === "1"; } catch(e){ return false; }
+      }
+      function setPortedConfirmed(serviceKey, phoneDigits){
+        try { sessionStorage.setItem(portedKey(serviceKey, phoneDigits), "1"); } catch(e){}
+      }
+      function applyPortedFields(line, expected, actual, prefix){
+        line.ported_confirmed = true;
+        line.ported_expected_network = expected;
+        line.ported_detected_network = actual;
+        line.ported_prefix = prefix;
+      }
+      function showPortedModal(opts){
+        return new Promise((resolve) => {
+          const modalEl = document.getElementById("portedModal");
+          if (!modalEl || !window.bootstrap) { resolve(true); return; }
+          const msgEl = document.getElementById("portedModalMsg");
+          const badgesEl = document.getElementById("portedModalPrefixes");
+          const btnCancel = document.getElementById("portedCancelBtn");
+          const btnConfirm = document.getElementById("portedConfirmBtn");
+          if (msgEl) msgEl.textContent = opts.message || "Ported number detected.";
+          if (badgesEl) {
+            badgesEl.innerHTML = "";
+            badgesEl.insertAdjacentHTML("beforeend", `<span class="badge text-bg-warning">Expected: ${opts.expected}</span>`);
+            badgesEl.insertAdjacentHTML("beforeend", `<span class="badge text-bg-secondary">Detected: ${opts.actual} (${opts.prefix})</span>`);
+          }
+          const inst = bootstrap.Modal.getOrCreateInstance(modalEl);
+          let done = false;
+          function cleanup(ok){
+            if (done) return;
+            done = true;
+            modalEl.removeEventListener("hidden.bs.modal", onHidden);
+            btnCancel?.removeEventListener("click", onCancel);
+            btnConfirm?.removeEventListener("click", onConfirm);
+            resolve(ok);
+          }
+          function onHidden(){ cleanup(false); }
+          function onCancel(){ inst.hide(); cleanup(false); }
+          function onConfirm(){ inst.hide(); cleanup(true); }
+          modalEl.addEventListener("hidden.bs.modal", onHidden);
+          btnCancel?.addEventListener("click", onCancel);
+          btnConfirm?.addEventListener("click", onConfirm);
+          inst.show();
+        });
+      }
+      async function ensurePortedConfirmedForLine(line, focusEl){
+        const phoneDigits = normalizePhone(line.phone || "");
+        const prefix = getPrefix(phoneDigits);
+        const expected = networkFromService(line);
+        const actual = networkFromPrefix(prefix);
+        if (!needsPortedConfirm(expected, actual)) return true;
+        const key = line.serviceId || line.serviceName || expected;
+        if (isPortedConfirmed(key, phoneDigits)) {
+          applyPortedFields(line, expected, actual, prefix);
+          return true;
+        }
+        const ok = await showPortedModal({
+          expected, actual, prefix,
+          message: "The phone prefix does not match the selected network."
+        });
+        if (ok){
+          setPortedConfirmed(key, phoneDigits);
+          applyPortedFields(line, expected, actual, prefix);
+          return true;
+        }
+        if (focusEl){
+          focusEl.classList.add("is-invalid");
+          focusEl.focus();
+          setTimeout(() => focusEl.classList.remove("is-invalid"), 1200);
+        }
+        return false;
+      }
+      async function ensurePortedConfirmedForCart(lines){
+        const items = Array.isArray(lines) ? lines : [];
+        for (const line of items){
+          const ok = await ensurePortedConfirmedForLine(line);
+          if (!ok) return false;
+        }
+        return true;
+      }
+
+      function setSelectedService(svc, btn){
+        selectedService = svc;
+        if (selectedServiceNameEl) selectedServiceNameEl.textContent = svc ? (svc.name || "Service") : "None";
+        if (orderOfferEl) {
+          const opts = svc ? buildOfferOptions(svc.offers || [], svc.unit) : "";
+          orderOfferEl.innerHTML = '<option value="" selected disabled>Select size</option>' + opts;
+        }
+        if (orderAmountEl) orderAmountEl.textContent = "0.00";
+        if (addToCartBtn) addToCartBtn.disabled = !svc;
+
+        document.querySelectorAll('.service-tile.active').forEach(el => el.classList.remove('active'));
+        if (btn) {
+          const tile = btn.closest('.service-tile');
+          if (tile) tile.classList.add('active');
+        }
+        if (svc) {
+          const orderCard = document.getElementById("orderCard");
+          if (orderCard) orderCard.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+
+      function wireServiceTiles(){
+        document.querySelectorAll(".select-service-btn").forEach(btn => {
+          const raw = btn.getAttribute("data-service") || "{}";
+          let svc = null;
+          try { svc = JSON.parse(raw); } catch(e){ svc = null; }
+          btn.addEventListener("click", function(){
+            if (!svc) return;
+            setSelectedService(svc, btn);
+          });
+        });
+      }
+
+      if (orderOfferEl) {
+        orderOfferEl.addEventListener("change", function(){
+          const idx = Number(orderOfferEl.value);
+          const of = selectedService && selectedService.offers ? (selectedService.offers || [])[idx] : null;
+          const amt = of ? (of.total != null ? of.total : of.amount) : 0;
+          if (orderAmountEl) orderAmountEl.textContent = money(amt);
+        });
+      }
+
+      if (addToCartBtn) addToCartBtn.addEventListener("click", async function(){
+        let phone = (orderPhoneEl ? orderPhoneEl.value : "").trim();
+        phone = String(phone).replace(/\D+/g, "");
+        if (phone.length > 10) phone = phone.slice(0, 10);
+        const idx = orderOfferEl ? Number(orderOfferEl.value) : NaN;
+        const of = selectedService && selectedService.offers ? (selectedService.offers || [])[idx] : null;
+        if (!selectedService) {
+          alert("Select a service first.");
+          return;
+        }
+        if (!phone || !of || isNaN(idx)) {
+          alert("Enter phone number and choose an offer.");
+          return;
+        }
+        if (!PHONE_RE.test(phone)) {
+          alert("Phone must be 10 digits (e.g. 0530393625).");
+          return;
+        }
+        const amt = of.total != null ? of.total : of.amount;
+        const line = {
+          serviceId: selectedService._id_str,
+          serviceName: selectedService.name,
+          service_network: selectedService.service_network,
+          network: selectedService.network,
+          phone: phone,
+          value: of.value,
+          value_obj: of.value,
+          value_text: offerLabel(of, selectedService ? selectedService.unit : ""),
+          unit: selectedService ? selectedService.unit : "",
+          amount: Number(amt || 0)
+        };
+        const ok = await ensurePortedConfirmedForLine(line, orderPhoneEl);
+        if (!ok) return;
+        const allowed = await ensurePhoneEligibleForOrder(phone);
+        if (!allowed) return;
+        if (hasDuplicate(line)) {
+          const okDup = await showDuplicateModal(DUPLICATE_MSG);
+          if (!okDup) return;
+        }
+        cart.push(line);
+        updateCartUI();
+        if (orderPhoneEl) orderPhoneEl.value = "";
+        if (orderOfferEl) {
+          orderOfferEl.value = "";
+        }
+        if (orderAmountEl) orderAmountEl.textContent = "0.00";
+      });
+
+      if (checkoutBtn) checkoutBtn.addEventListener("click", async function(){
+        if (checkoutBusy || !cart.length) return;
+        const portedOk = await ensurePortedConfirmedForCart(cart);
+        if (!portedOk) return;
+        if (!PAYSTACK_PK){
+          alert("Payment is not configured. Please contact support.");
+          return;
+        }
+        const total = cart.reduce((sum, it) => sum + Number(it.amount || 0), 0);
+        const paystackTotals = calcPaystackTotals(total);
+        if (total <= 0){
+          alert("Cart total must be greater than zero.");
+          return;
+        }
+
+        const reference = makePublicReference();
+        activePaymentReference = reference;
+        checkoutBusy = true;
+        if (checkoutBtn) checkoutBtn.disabled = true;
+
+        try {
+          await createPaymentSession(reference);
+        } catch (err) {
+          checkoutBusy = false;
+          if (checkoutBtn) checkoutBtn.disabled = false;
+          alert((err && err.message) || "Could not start payment session.");
+          return;
+        }
+
+        const primaryPhone = cart.length ? cart[0].phone : "";
+        const handler = PaystackPop.setup({
+          key: PAYSTACK_PK,
+          ref: reference,
+          email: generatePaystackEmail(primaryPhone),
+          amount: Math.round(paystackTotals.total * 100),
+          currency: "GHS",
+          metadata: {
+            public_checkout: true,
+            customer_phone: primaryPhone,
+            total_expected_ghs: total,
+            paystack_total_expected_ghs: paystackTotals.total
+          },
+          callback: function(response){
+            activePaymentReference = response.reference || reference;
+            setRedirecting(true);
+            setPaymentCard("processing", "Confirming Your Order", "Payment received. Confirming your order...", "", "");
+            fetch(PUBLIC_CHECKOUT_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                cart: cart,
+                paystack: { reference: activePaymentReference }
+              })
+            })
+              .then(r => r.json().then(j => ({ ok: r.ok, json: j })).catch(() => ({ ok: r.ok, json: {} })))
+              .then(res => handleFinalizeResponse(res.json || {}, activePaymentReference))
+              .catch(() => {
+                handleFinalizeResponse({
+                  status: "recoverable_failure",
+                  message: "Payment may have succeeded, but the site could not finish processing your order. Do not pay again."
+                }, activePaymentReference);
+              })
+              .finally(() => {
+                checkoutBusy = false;
+                if (checkoutBtn) checkoutBtn.disabled = false;
+              });
+          },
+          onClose: function(){
+            checkoutBusy = false;
+            if (checkoutBtn) checkoutBtn.disabled = false;
+          }
+        });
+        handler.openIframe();
+      });
+
+      if (cartList) {
+        cartList.addEventListener("click", function(e){
+          const btn = e.target.closest ? e.target.closest("button[data-remove]") : null;
+          if (!btn) return;
+          const idx = Number(btn.getAttribute("data-remove"));
+          if (!isNaN(idx)) {
+            cart.splice(idx, 1);
+            updateCartUI();
+          }
+        });
+      }
+
+      wireServiceTiles();
+      try {
+        const saved = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "[]");
+        cart = Array.isArray(saved) ? saved : [];
+      } catch (e) {
+        cart = [];
+      }
+      setSelectedService(null);
+      updateCartUI();
+    })();
+  </script>
+  <script>
+    // Status form helper
+    window.gotoStatus = function(ev){
+      ev.preventDefault();
+      const inp = document.getElementById('statusPhone');
+      if (!inp) return false;
+      let d = (inp.value||'').replace(/\D+/g,'');
+      if (d.startsWith('233')) d = '0'+d.slice(3);
+      if (d.length > 10) d = d.slice(-10);
+      window.location.href = '/check-status?phone='+encodeURIComponent(d);
+      return false;
+    };
+
+    // Reveal animation
+    const container = document.querySelector('#services');
+    if(container){
+      const els = container.querySelectorAll('.reveal-up');
+      if(!('IntersectionObserver' in window) || !els.length){
+        els.forEach(el => el.classList.add('reveal-in'));
+      }else{
+        const io = new IntersectionObserver((entries)=>{
+          entries.forEach((entry)=>{
+            if(entry.isIntersecting){
+              const idx = Array.prototype.indexOf.call(els, entry.target);
+              entry.target.style.transitionDelay=(idx%6)*60+'ms';
+              entry.target.classList.add('reveal-in');
+              io.unobserve(entry.target);
+            }
+          });
+        },{threshold:.15});
+        els.forEach(el => io.observe(el));
+      }
+    }
+
+    // Footer year
+    document.getElementById('yearNow').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

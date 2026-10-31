@@ -1,0 +1,20 @@
+{% if subscription_notice is defined %}
+{% if subscription_notice.in_grace %}
+<div class="customer-content" style="padding-bottom:0"><div class="alert alert-warning mb-0" role="status">
+  <strong>Your subscription payment is due.</strong> Your dashboard and store remain available until {{ subscription_notice.grace_end.strftime('%d %b %Y at %H:%M') }} GMT. Pay GH₵15 before this deadline to avoid interruption.
+  <a href="{{ url_for('subscription.page') }}" class="alert-link">Pay subscription</a>
+</div></div>
+{% endif %}
+{% if show_subscription_announcement %}
+<dialog id="subscription-announcement" aria-labelledby="subscription-announcement-title" style="border:0;border-radius:20px;padding:28px;max-width:460px;width:calc(100% - 32px);box-shadow:0 20px 80px #0004">
+  <h2 id="subscription-announcement-title" class="h4">Monthly subscriptions are now available</h2>
+  <p>Your agent plan is <strong>GH₵15 per month</strong>. Renew on time to keep your dashboard and store available.</p>
+  {% if subscription_notice.in_grace %}<p class="alert alert-warning">Your 24-hour grace period ends <strong>{{ subscription_notice.grace_end.strftime('%d %b %Y at %H:%M') }} GMT</strong>. Please pay before then to avoid interruption.</p>
+  {% elif subscription_notice.paid %}<p>Your subscription is active. Next payment due: <strong>{{ subscription_notice.due_at.strftime('%d %b %Y at %H:%M') }} GMT</strong>. You have a 24-hour grace period after your due time.</p>
+  {% else %}<p>Your payment is due. Pay now to restore access to your dashboard and store.</p>{% endif %}
+  <a class="btn btn-primary" href="{{ url_for('subscription.page') }}">View subscription / Pay now</a>
+  <form method="dialog" class="d-inline"><button class="btn btn-outline-secondary">Got it</button></form>
+</dialog><style>#subscription-announcement::backdrop{background:#0d1b3db3}</style>
+<script>document.getElementById('subscription-announcement').showModal();</script>
+{% endif %}
+{% endif %}
